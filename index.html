@@ -336,7 +336,7 @@
             }
         }
         
-        .redirect-overlay {
+        .welcome-modal {
             position: fixed;
             top: 0;
             left: 0;
@@ -352,12 +352,12 @@
             transition: all 0.3s ease;
         }
         
-        .redirect-overlay.active {
+        .welcome-modal.active {
             opacity: 1;
             visibility: visible;
         }
         
-        .redirect-content {
+        .modal-content {
             background: white;
             padding: 2rem;
             border-radius: 20px;
@@ -369,11 +369,11 @@
             transition: transform 0.5s ease;
         }
         
-        .redirect-overlay.active .redirect-content {
+        .welcome-modal.active .modal-content {
             transform: translateY(0);
         }
         
-        .redirect-content h3 {
+        .modal-content h3 {
             font-size: 1.8rem;
             margin-bottom: 1rem;
             background: linear-gradient(to right, #6a11cb, #2575fc);
@@ -382,8 +382,25 @@
             color: transparent;
         }
         
-        .redirect-content p {
+        .modal-content p {
             margin-bottom: 1.5rem;
+        }
+        
+        .modal-btn {
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(106, 17, 203, 0.4);
+        }
+        
+        .modal-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(106, 17, 203, 0.5);
         }
         
         @media (max-width: 768px) {
@@ -480,12 +497,12 @@
         </div>
     </main>
     
-    <!-- Redirect Overlay -->
-    <div class="redirect-overlay" id="redirectOverlay">
-        <div class="redirect-content">
-            <h3>Redirecting to Registration</h3>
-            <p>Please wait while we take you to the registration page...</p>
-            <div class="loader" style="margin: 20px auto; width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #6a11cb; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+    <!-- Welcome Modal -->
+    <div class="welcome-modal" id="welcomeModal">
+        <div class="modal-content">
+            <h3>Welcome to F_Zone!</h3>
+            <p>We're excited to have you join our friendly community. Let's get you started on your journey to making new connections!</p>
+            <button class="modal-btn" id="continueBtn">Continue to Registration</button>
         </div>
     </div>
 
@@ -591,7 +608,8 @@
         
         // Start button interaction
         const startBtn = document.getElementById('startBtn');
-        const redirectOverlay = document.getElementById('redirectOverlay');
+        const welcomeModal = document.getElementById('welcomeModal');
+        const continueBtn = document.getElementById('continueBtn');
         
         startBtn.addEventListener('click', function() {
             // Add ripple effect
@@ -611,16 +629,17 @@
                 ripple.remove();
             }, 600);
             
-            // Show redirect overlay
-            redirectOverlay.classList.add('active');
+            // Show welcome modal instead of alert
+            welcomeModal.classList.add('active');
             
             // Create confetti effect
             createConfetti();
-            
-            // Redirect to registration page after a short delay
-            setTimeout(() => {
-                window.location.href = 'registration.html';
-            }, 2000);
+        });
+        
+        // Continue button to redirect to registration
+        continueBtn.addEventListener('click', function() {
+            // Redirect to registration page
+            window.location.href = 'registration.html';
         });
         
         // Friends icon interaction
@@ -686,16 +705,6 @@
         window.addEventListener('load', () => {
             setTimeout(createConfetti, 1000);
         });
-        
-        // Add CSS for loader animation
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes spin {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
-            }
-        `;
-        document.head.appendChild(style);
     </script>
 </body>
 </html>
