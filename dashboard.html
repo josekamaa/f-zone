@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>F_Zone Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
     <style>
         * {
             margin: 0;
@@ -705,6 +708,12 @@
             color: #999;
         }
         
+        .loading {
+            text-align: center;
+            color: #666;
+            padding: 2rem;
+        }
+        
         @media (max-width: 1024px) {
             .dashboard-content {
                 flex-direction: column;
@@ -792,7 +801,10 @@
             </div>
             
             <div class="users-list" id="usersList">
-                <!-- User cards will be dynamically added here -->
+                <div class="loading">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Loading users...</p>
+                </div>
             </div>
             
             <!-- History Section -->
@@ -803,11 +815,15 @@
                 </div>
                 
                 <div class="history-list" id="messagesHistory">
-                    <!-- Message history will be dynamically added here -->
+                    <div class="loading">
+                        <p>No message history yet</p>
+                    </div>
                 </div>
                 
                 <div class="history-list" id="callsHistory" style="display: none;">
-                    <!-- Call history will be dynamically added here -->
+                    <div class="loading">
+                        <p>No call history yet</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -880,7 +896,27 @@
     </div>
 
     <script>
-        // DOM Elements
+        // =============================================
+        // FIREBASE CONFIGURATION
+        // =============================================
+        // REPLACE WITH YOUR ACTUAL FIREBASE CONFIG FROM FIREBASE CONSOLE
+       const firebaseConfig = {
+  apiKey: "AIzaSyA1p1cDsJ2egSCn9hoZepAd5n6Zml6XYQw",
+  authDomain: "f-zone-d4c7f.firebaseapp.com",
+  databaseURL: "https://f-zone-d4c7f-default-rtdb.firebaseio.com",
+  projectId: "f-zone-d4c7f",
+  storageBucket: "f-zone-d4c7f.firebasestorage.app",
+  messagingSenderId: "976112790038",
+  appId: "1:976112790038:web:afab55ad164b3d7f9d2337",
+  measurementId: "G-NRFSYWMH0M"
+};
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // =============================================
+        // DOM ELEMENTS
+        // =============================================
         const usersList = document.getElementById('usersList');
         const onlineCount = document.getElementById('onlineCount');
         const currentUserName = document.getElementById('currentUserName');
@@ -907,25 +943,25 @@
         const notificationIconClass = document.getElementById('notificationIconClass');
         const notificationMessage = document.getElementById('notificationMessage');
         const notificationClose = document.getElementById('notificationClose');
-        
-        // Global variables
+
+        // =============================================
+        // GLOBAL VARIABLES
+        // =============================================
         let currentUser = null;
         let selectedUser = null;
         let allUsers = [];
         let conversations = {};
         let callHistory = [];
-        let messageInterval = null;
-        let syncInterval = null;
-        let lastSyncTime = 0;
-        
-        // Initialize dashboard
+
+        // =============================================
+        // INITIALIZATION
+        // =============================================
         function initDashboard() {
             // Get current user from localStorage
             currentUser = JSON.parse(localStorage.getItem('fzone_current_user'));
             
             if (!currentUser) {
-                // Redirect to login if no user is logged in
-                window.location.href = 'registration.html';
+                window.location.href = 'index.html';
                 return;
             }
             
@@ -933,67 +969,89 @@
             currentUserName.textContent = `${currentUser.firstName} ${currentUser.lastName}`;
             currentUserAvatar.textContent = currentUser.firstName.charAt(0) + currentUser.lastName.charAt(0);
             
-            // Load users from localStorage
-            loadUsers();
+            // Setup Firebase listeners
+            setupFirebaseListeners();
             
-            // Set up event listeners
+            // Mark user as online
+            markUserAsOnline();
+            
+            // Setup event listeners
+            setupEventListeners();
+            
+            // Load existing data
+            loadInitialData();
+        }
+
+        function setupFirebaseListeners() {
+            // Listen for online users
+            listenForOnlineUsers();
+            
+            // Listen for messages
+            listenForMessages();
+            
+            // Listen for calls
+            listenForCalls();
+        }
+
+        function setupEventListeners() {
             chatBtn.addEventListener('click', startChat);
             voiceBtn.addEventListener('click', startVoiceCall);
             videoBtn.addEventListener('click', startVideoCall);
             logoutBtn.addEventListener('click', logout);
             sendBtn.addEventListener('click', sendMessage);
             messageInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    sendMessage();
-                }
+                if (e.key === 'Enter') sendMessage();
             });
             
-            // History tab event listeners
+            // History tabs
             historyTabs.forEach(tab => {
                 tab.addEventListener('click', function() {
-                    // Remove active class from all tabs
                     historyTabs.forEach(t => t.classList.remove('active'));
-                    
-                    // Add active class to clicked tab
                     this.classList.add('active');
                     
-                    // Show corresponding history
                     const tabName = this.getAttribute('data-tab');
                     if (tabName === 'messages') {
                         messagesHistory.style.display = 'flex';
                         callsHistory.style.display = 'none';
-                    } else if (tabName === 'calls') {
+                    } else {
                         messagesHistory.style.display = 'none';
                         callsHistory.style.display = 'flex';
                     }
                 });
             });
             
-            // Notification close event
+            // Notification close
             notificationClose.addEventListener('click', () => {
                 notification.classList.remove('show');
             });
             
-            // Initialize communication buttons as disabled
+            // Disable communication buttons initially
             disableCommunicationButtons();
-            
-            // Set up periodic message checking (simulates real-time updates)
-            messageInterval = setInterval(checkForNewMessages, 1000);
-            
-            // Set up periodic sync with server
-            syncInterval = setInterval(syncWithServer, 2000);
-            
-            // Load history
-            loadHistory();
-            
-            // Mark user as online
-            markUserAsOnline();
         }
-        
-        // Mark user as online in the shared storage
+
+        function loadInitialData() {
+            // Load users from localStorage
+            const storedUsers = JSON.parse(localStorage.getItem('fzone_users')) || [];
+            allUsers = storedUsers.filter(user => user.id !== currentUser.id);
+            
+            // Load conversations from localStorage
+            conversations = JSON.parse(localStorage.getItem('fzone_conversations')) || {};
+            
+            // Load call history from localStorage
+            callHistory = JSON.parse(localStorage.getItem('fzone_call_history')) || [];
+            
+            // Update history displays
+            updateMessageHistory();
+            updateCallHistory();
+        }
+
+        // =============================================
+        // FIREBASE FUNCTIONS
+        // =============================================
         function markUserAsOnline() {
-            const onlineUsers = JSON.parse(localStorage.getItem('fzone_online_users')) || {};
-            onlineUsers[currentUser.id] = {
+            const userStatusRef = database.ref('onlineUsers/' + currentUser.id);
+            
+            const userData = {
                 id: currentUser.id,
                 firstName: currentUser.firstName,
                 lastName: currentUser.lastName,
@@ -1001,54 +1059,56 @@
                 avatar: currentUser.firstName.charAt(0) + currentUser.lastName.charAt(0),
                 lastSeen: Date.now()
             };
-            localStorage.setItem('fzone_online_users', JSON.stringify(onlineUsers));
-        }
-        
-        // Mark user as offline
-        function markUserAsOffline() {
-            const onlineUsers = JSON.parse(localStorage.getItem('fzone_online_users')) || {};
-            delete onlineUsers[currentUser.id];
-            localStorage.setItem('fzone_online_users', JSON.stringify(onlineUsers));
-        }
-        
-        // Load users from localStorage
-        function loadUsers() {
-            const storedUsers = JSON.parse(localStorage.getItem('fzone_users')) || [];
-            const onlineUsers = JSON.parse(localStorage.getItem('fzone_online_users')) || {};
             
-            // Filter out the current user
-            allUsers = storedUsers.filter(user => user.id !== currentUser.id);
+            userStatusRef.set(userData);
+            userStatusRef.onDisconnect().remove();
+        }
+
+        function listenForOnlineUsers() {
+            const onlineUsersRef = database.ref('onlineUsers');
             
-            // Add online status to users based on online users list
-            allUsers.forEach(user => {
-                user.status = onlineUsers[user.id] ? 'online' : 'offline';
-                user.avatar = user.firstName.charAt(0) + user.lastName.charAt(0);
+            onlineUsersRef.on('value', (snapshot) => {
+                const onlineUsers = snapshot.val() || {};
+                updateUsersList(onlineUsers);
             });
+        }
+
+        function listenForMessages() {
+            const messagesRef = database.ref('messages');
             
-            // Render users list
-            renderUsersList();
-            
-            // Update online count
-            const onlineUsersCount = allUsers.filter(user => user.status === 'online').length;
-            onlineCount.textContent = `${onlineUsersCount} Online`;
-            
-            // Initialize conversations object
-            allUsers.forEach(user => {
-                const conversationId = getConversationId(currentUser.id, user.id);
-                if (!conversations[conversationId]) {
-                    conversations[conversationId] = [];
+            messagesRef.on('child_added', (snapshot) => {
+                const message = snapshot.val();
+                
+                // Check if message is for current user
+                if (message.receiverId === currentUser.id || message.senderId === currentUser.id) {
+                    addMessageToConversation(message);
+                    
+                    // Show notification if not in current chat
+                    if (selectedUser && selectedUser.id !== message.senderId) {
+                        showNotification('message', `${getUserNameById(message.senderId)}: ${message.text}`);
+                    }
                 }
             });
-            
-            // Load any existing messages from localStorage
-            loadStoredMessages();
-            
-            // Load call history from localStorage
-            loadCallHistory();
         }
-        
-        // Render users list
-        function renderUsersList() {
+
+        function listenForCalls() {
+            const callsRef = database.ref('calls');
+            
+            callsRef.on('child_added', (snapshot) => {
+                const call = snapshot.val();
+                
+                if (call.receiverId === currentUser.id) {
+                    // This is a call for the current user
+                    addCallToHistory(call);
+                    showNotification('call', `Incoming ${call.type} call from ${getUserNameById(call.senderId)}`);
+                }
+            });
+        }
+
+        // =============================================
+        // USER MANAGEMENT
+        // =============================================
+        function updateUsersList(onlineUsers) {
             usersList.innerHTML = '';
             
             if (allUsers.length === 0) {
@@ -1056,21 +1116,26 @@
                 return;
             }
             
+            // Update online count
+            const onlineCountValue = Object.keys(onlineUsers).length - 1; // Exclude current user
+            onlineCount.textContent = `${Math.max(0, onlineCountValue)} Online`;
+            
             allUsers.forEach(user => {
+                const isOnline = onlineUsers[user.id];
                 const userCard = document.createElement('div');
                 userCard.className = 'user-card';
                 userCard.dataset.userId = user.id;
                 
-                const statusClass = `status-${user.status}`;
+                const statusClass = `status-${isOnline ? 'online' : 'offline'}`;
                 
                 userCard.innerHTML = `
-                    <div class="user-avatar-small">${user.avatar}</div>
+                    <div class="user-avatar-small">${user.avatar || 'US'}</div>
                     <div class="user-details-small">
                         <h4>${user.firstName} ${user.lastName}</h4>
                         <p>@${user.username}</p>
                         <div class="user-status">
                             <i class="fas fa-circle ${statusClass}"></i>
-                            <span class="${statusClass}">${user.status.charAt(0).toUpperCase() + user.status.slice(1)}</span>
+                            <span class="${statusClass}">${isOnline ? 'Online' : 'Offline'}</span>
                         </div>
                     </div>
                 `;
@@ -1079,53 +1144,43 @@
                 usersList.appendChild(userCard);
             });
         }
-        
-        // Select a user
+
         function selectUser(user) {
             selectedUser = user;
-            
-            // Update selected user display
             selectedUserName.textContent = `${user.firstName} ${user.lastName}`;
             
-            // Update UI to show user is selected
+            // Update UI
             document.querySelectorAll('.user-card').forEach(card => {
                 card.classList.remove('active');
             });
+            document.querySelector(`.user-card[data-user-id="${user.id}"]`)?.classList.add('active');
             
-            document.querySelector(`.user-card[data-user-id="${user.id}"]`).classList.add('active');
-            
-            // Enable communication buttons
             enableCommunicationButtons();
         }
-        
-        // Start chat with selected user
+
+        // =============================================
+        // CHAT FUNCTIONS
+        // =============================================
         function startChat() {
             if (!selectedUser) {
                 alert('Please select a user first');
                 return;
             }
             
-            // Show chat interface
             noChatSelected.style.display = 'none';
             chatActive.style.display = 'flex';
             chatMessages.style.display = 'block';
             chatInput.style.display = 'flex';
             
-            // Set chat user info
             chatUserName.textContent = `${selectedUser.firstName} ${selectedUser.lastName}`;
-            chatUserAvatar.textContent = selectedUser.avatar;
-            chatUserStatus.textContent = selectedUser.status.charAt(0).toUpperCase() + selectedUser.status.slice(1);
+            chatUserAvatar.textContent = selectedUser.avatar || 'US';
+            chatUserStatus.textContent = 'Online';
             
-            // Load chat messages
             loadChatMessages();
-            
-            // Focus on message input
             messageInput.focus();
         }
-        
-        // Load chat messages for the selected user
+
         function loadChatMessages() {
-            // Clear existing messages
             chatMessages.innerHTML = '';
             
             const conversationId = getConversationId(currentUser.id, selectedUser.id);
@@ -1140,308 +1195,138 @@
                 return;
             }
             
-            // Add messages to chat
             messages.forEach(message => {
-                const messageEl = document.createElement('div');
-                const isCurrentUser = message.senderId === currentUser.id;
-                messageEl.className = `message ${isCurrentUser ? 'sent' : 'received'}`;
-                messageEl.innerHTML = `
-                    <div>${message.text}</div>
-                    <div class="message-time">${message.time}</div>
-                `;
-                chatMessages.appendChild(messageEl);
+                addMessageToUI(message);
             });
             
-            // Scroll to bottom of chat
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
-        
-        // Send a message
+
         function sendMessage() {
             const messageText = messageInput.value.trim();
-            
-            if (messageText === '') return;
-            
-            // Create message object
-            const now = new Date();
-            const timeString = `${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
+            if (messageText === '' || !selectedUser) return;
             
             const message = {
                 text: messageText,
                 senderId: currentUser.id,
                 receiverId: selectedUser.id,
-                time: timeString,
-                timestamp: now.getTime()
+                senderName: `${currentUser.firstName} ${currentUser.lastName}`,
+                timestamp: Date.now(),
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
             };
             
-            // Add message to conversation
-            const conversationId = getConversationId(currentUser.id, selectedUser.id);
-            if (!conversations[conversationId]) {
-                conversations[conversationId] = [];
-            }
-            conversations[conversationId].push(message);
-            
-            // Save to localStorage
-            saveMessagesToStorage();
-            
-            // Create message element
-            const messageEl = document.createElement('div');
-            messageEl.className = 'message sent';
-            messageEl.innerHTML = `
-                <div>${messageText}</div>
-                <div class="message-time">${timeString}</div>
-            `;
-            
-            // Add message to chat
-            chatMessages.appendChild(messageEl);
+            // Save to Firebase
+            const messagesRef = database.ref('messages');
+            messagesRef.push(message);
             
             // Clear input
             messageInput.value = '';
-            
-            // Scroll to bottom
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-            
-            // Update history
-            updateMessageHistory();
-            
-            // Save message to shared storage for real-time communication
-            saveMessageToSharedStorage(message);
         }
-        
-        // Save message to shared storage for real-time communication
-        function saveMessageToSharedStorage(message) {
-            const sharedMessages = JSON.parse(localStorage.getItem('fzone_shared_messages')) || [];
-            sharedMessages.push({
-                ...message,
-                id: Date.now().toString() + Math.random().toString(36).substr(2, 5)
-            });
-            localStorage.setItem('fzone_shared_messages', JSON.stringify(sharedMessages));
-        }
-        
-        // Check for new messages (simulates real-time updates)
-        function checkForNewMessages() {
-            if (!selectedUser) return;
+
+        function addMessageToConversation(message) {
+            const conversationId = getConversationId(message.senderId, message.receiverId);
             
-            const conversationId = getConversationId(currentUser.id, selectedUser.id);
-            const storedConversations = JSON.parse(localStorage.getItem('fzone_conversations')) || {};
-            const storedMessages = storedConversations[conversationId] || [];
-            
-            // Check if there are new messages
-            if (storedMessages.length > (conversations[conversationId] || []).length) {
-                // Reload messages
-                conversations[conversationId] = storedMessages;
-                loadChatMessages();
-                updateMessageHistory();
+            if (!conversations[conversationId]) {
+                conversations[conversationId] = [];
             }
-        }
-        
-        // Sync with server (shared storage)
-        function syncWithServer() {
-            // Update online status
-            markUserAsOnline();
             
-            // Check for new online users
-            const onlineUsers = JSON.parse(localStorage.getItem('fzone_online_users')) || {};
-            const storedUsers = JSON.parse(localStorage.getItem('fzone_users')) || [];
-            
-            // Update user statuses
-            allUsers.forEach(user => {
-                user.status = onlineUsers[user.id] ? 'online' : 'offline';
-            });
-            
-            // Re-render users list
-            renderUsersList();
-            
-            // Check for new shared messages
-            const sharedMessages = JSON.parse(localStorage.getItem('fzone_shared_messages')) || [];
-            const newMessages = sharedMessages.filter(msg => 
-                msg.timestamp > lastSyncTime && 
-                (msg.receiverId === currentUser.id || msg.senderId === currentUser.id)
+            // Check if message already exists
+            const messageExists = conversations[conversationId].some(
+                msg => msg.timestamp === message.timestamp && msg.text === message.text
             );
             
-            if (newMessages.length > 0) {
-                // Process new messages
-                newMessages.forEach(message => {
-                    const conversationId = getConversationId(message.senderId, message.receiverId);
-                    if (!conversations[conversationId]) {
-                        conversations[conversationId] = [];
-                    }
-                    
-                    // Check if message already exists
-                    const messageExists = conversations[conversationId].some(
-                        msg => msg.timestamp === message.timestamp && msg.text === message.text
-                    );
-                    
-                    if (!messageExists) {
-                        conversations[conversationId].push(message);
-                        
-                        // Show notification if not in the conversation
-                        if (selectedUser && selectedUser.id !== message.senderId) {
-                            showNotification('message', `${getUserNameById(message.senderId)}: ${message.text}`);
-                        }
-                    }
-                });
+            if (!messageExists) {
+                conversations[conversationId].push(message);
+                saveConversationsToStorage();
                 
-                // Save updated conversations
-                saveMessagesToStorage();
-                
-                // Update UI if needed
-                if (selectedUser) {
-                    const currentConversationId = getConversationId(currentUser.id, selectedUser.id);
-                    if (newMessages.some(msg => 
-                        getConversationId(msg.senderId, msg.receiverId) === currentConversationId)) {
-                        loadChatMessages();
-                    }
+                // Update UI if viewing this conversation
+                if (selectedUser && getConversationId(currentUser.id, selectedUser.id) === conversationId) {
+                    addMessageToUI(message);
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
                 }
                 
                 updateMessageHistory();
             }
-            
-            // Update last sync time
-            lastSyncTime = Date.now();
         }
-        
-        // Get user name by ID
-        function getUserNameById(userId) {
-            const user = allUsers.find(u => u.id === userId) || 
-                        JSON.parse(localStorage.getItem('fzone_users')).find(u => u.id === userId);
-            return user ? `${user.firstName} ${user.lastName}` : 'Unknown User';
+
+        function addMessageToUI(message) {
+            const messageEl = document.createElement('div');
+            const isCurrentUser = message.senderId === currentUser.id;
+            messageEl.className = `message ${isCurrentUser ? 'sent' : 'received'}`;
+            messageEl.innerHTML = `
+                <div>${message.text}</div>
+                <div class="message-time">${message.time}</div>
+            `;
+            chatMessages.appendChild(messageEl);
         }
-        
-        // Show notification
-        function showNotification(type, message) {
-            notificationMessage.textContent = message;
-            
-            if (type === 'message') {
-                notificationIcon.style.background = '#6a11cb';
-                notificationIconClass.className = 'fas fa-comment';
-            } else if (type === 'call') {
-                notificationIcon.style.background = '#00b09b';
-                notificationIconClass.className = 'fas fa-phone';
-            }
-            
-            notification.classList.add('show');
-            
-            // Auto hide after 5 seconds
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 5000);
-        }
-        
-        // Load stored messages from localStorage
-        function loadStoredMessages() {
-            const storedConversations = JSON.parse(localStorage.getItem('fzone_conversations')) || {};
-            Object.assign(conversations, storedConversations);
-        }
-        
-        // Save messages to localStorage
-        function saveMessagesToStorage() {
-            localStorage.setItem('fzone_conversations', JSON.stringify(conversations));
-        }
-        
-        // Generate a consistent conversation ID for two users
-        function getConversationId(user1Id, user2Id) {
-            return [user1Id, user2Id].sort().join('_');
-        }
-        
-        // Start voice call
+
+        // =============================================
+        // CALL FUNCTIONS
+        // =============================================
         function startVoiceCall() {
             if (!selectedUser) {
                 alert('Please select a user first');
                 return;
             }
             
-            alert(`Starting voice call with ${selectedUser.firstName} ${selectedUser.lastName}...`);
-            
-            // Add to call history
-            const now = new Date();
-            const timeString = `${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
-            
             const call = {
                 type: 'voice',
-                userId: selectedUser.id,
-                userName: `${selectedUser.firstName} ${selectedUser.lastName}`,
-                userAvatar: selectedUser.avatar,
-                time: timeString,
-                timestamp: now.getTime(),
-                status: 'connected'
+                senderId: currentUser.id,
+                receiverId: selectedUser.id,
+                senderName: `${currentUser.firstName} ${currentUser.lastName}`,
+                timestamp: Date.now(),
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                status: 'initiated'
             };
             
-            callHistory.push(call);
-            saveCallHistory();
-            updateCallHistory();
+            // Save to Firebase
+            const callsRef = database.ref('calls');
+            callsRef.push(call);
             
-            // Save call to shared storage
-            saveCallToSharedStorage(call);
+            // Add to local history
+            addCallToHistory(call);
             
-            // In a real app, this would initiate a WebRTC voice call
+            alert(`Starting voice call with ${selectedUser.firstName} ${selectedUser.lastName}...`);
         }
-        
-        // Start video call
+
         function startVideoCall() {
             if (!selectedUser) {
                 alert('Please select a user first');
                 return;
             }
             
-            alert(`Starting video call with ${selectedUser.firstName} ${selectedUser.lastName}...`);
-            
-            // Add to call history
-            const now = new Date();
-            const timeString = `${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
-            
             const call = {
                 type: 'video',
-                userId: selectedUser.id,
-                userName: `${selectedUser.firstName} ${selectedUser.lastName}`,
-                userAvatar: selectedUser.avatar,
-                time: timeString,
-                timestamp: now.getTime(),
-                status: 'connected'
+                senderId: currentUser.id,
+                receiverId: selectedUser.id,
+                senderName: `${currentUser.firstName} ${currentUser.lastName}`,
+                timestamp: Date.now(),
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                status: 'initiated'
             };
             
+            // Save to Firebase
+            const callsRef = database.ref('calls');
+            callsRef.push(call);
+            
+            // Add to local history
+            addCallToHistory(call);
+            
+            alert(`Starting video call with ${selectedUser.firstName} ${selectedUser.lastName}...`);
+        }
+
+        function addCallToHistory(call) {
             callHistory.push(call);
-            saveCallHistory();
-            updateCallHistory();
-            
-            // Save call to shared storage
-            saveCallToSharedStorage(call);
-            
-            // In a real app, this would initiate a WebRTC video call
-        }
-        
-        // Save call to shared storage
-        function saveCallToSharedStorage(call) {
-            const sharedCalls = JSON.parse(localStorage.getItem('fzone_shared_calls')) || [];
-            sharedCalls.push({
-                ...call,
-                id: Date.now().toString() + Math.random().toString(36).substr(2, 5)
-            });
-            localStorage.setItem('fzone_shared_calls', JSON.stringify(sharedCalls));
-        }
-        
-        // Load call history from localStorage
-        function loadCallHistory() {
-            const storedCallHistory = JSON.parse(localStorage.getItem('fzone_call_history')) || [];
-            callHistory = storedCallHistory;
-        }
-        
-        // Save call history to localStorage
-        function saveCallHistory() {
-            localStorage.setItem('fzone_call_history', JSON.stringify(callHistory));
-        }
-        
-        // Load and display history
-        function loadHistory() {
-            updateMessageHistory();
+            saveCallHistoryToStorage();
             updateCallHistory();
         }
-        
-        // Update message history display
+
+        // =============================================
+        // HISTORY FUNCTIONS
+        // =============================================
         function updateMessageHistory() {
             messagesHistory.innerHTML = '';
             
-            // Get all conversations with other users
             const userConversations = [];
             
             allUsers.forEach(user => {
@@ -1449,12 +1334,11 @@
                 const messages = conversations[conversationId] || [];
                 
                 if (messages.length > 0) {
-                    // Get the last message
                     const lastMessage = messages[messages.length - 1];
                     userConversations.push({
                         userId: user.id,
                         userName: `${user.firstName} ${user.lastName}`,
-                        userAvatar: user.avatar,
+                        userAvatar: user.avatar || 'US',
                         lastMessage: lastMessage.text,
                         time: lastMessage.time,
                         timestamp: lastMessage.timestamp
@@ -1462,7 +1346,6 @@
                 }
             });
             
-            // Sort by timestamp (most recent first)
             userConversations.sort((a, b) => b.timestamp - a.timestamp);
             
             if (userConversations.length === 0) {
@@ -1470,7 +1353,6 @@
                 return;
             }
             
-            // Display message history
             userConversations.forEach(conversation => {
                 const historyItem = document.createElement('div');
                 historyItem.className = 'history-item';
@@ -1490,7 +1372,6 @@
                     </div>
                 `;
                 
-                // Add event listener to reply button
                 const replyBtn = historyItem.querySelector('.reply-btn');
                 replyBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
@@ -1501,7 +1382,6 @@
                     }
                 });
                 
-                // Add event listener to the whole item
                 historyItem.addEventListener('click', () => {
                     const user = allUsers.find(u => u.id === conversation.userId);
                     if (user) {
@@ -1513,8 +1393,7 @@
                 messagesHistory.appendChild(historyItem);
             });
         }
-        
-        // Update call history display
+
         function updateCallHistory() {
             callsHistory.innerHTML = '';
             
@@ -1523,23 +1402,21 @@
                 return;
             }
             
-            // Sort by timestamp (most recent first)
             const sortedCallHistory = [...callHistory].sort((a, b) => b.timestamp - a.timestamp);
             
-            // Display call history
             sortedCallHistory.forEach(call => {
                 const historyItem = document.createElement('div');
                 historyItem.className = 'history-item';
-                historyItem.dataset.userId = call.userId;
+                historyItem.dataset.userId = call.receiverId === currentUser.id ? call.senderId : call.receiverId;
                 
                 const callIcon = call.type === 'voice' ? 'fa-phone' : 'fa-video';
                 const callStatusClass = call.status === 'missed' ? 'call-missed' : 'call-received';
-                const callStatusText = call.status === 'missed' ? 'Missed call' : 'Call';
+                const callStatusText = call.status === 'missed' ? 'Missed call' : (call.senderId === currentUser.id ? 'Outgoing call' : 'Incoming call');
                 
                 historyItem.innerHTML = `
-                    <div class="history-avatar">${call.userAvatar}</div>
+                    <div class="history-avatar">${getUserAvatarById(call.senderId === currentUser.id ? call.receiverId : call.senderId)}</div>
                     <div class="history-details">
-                        <h4>${call.userName}</h4>
+                        <h4>${getUserNameById(call.senderId === currentUser.id ? call.receiverId : call.senderId)}</h4>
                         <div class="call-type ${callStatusClass}">
                             <i class="fas ${callIcon}"></i>
                             <span>${callStatusText}</span>
@@ -1553,11 +1430,11 @@
                     </div>
                 `;
                 
-                // Add event listener to call back button
                 const callBackBtn = historyItem.querySelector('.call-back-btn');
                 callBackBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    const user = allUsers.find(u => u.id === call.userId);
+                    const userId = call.senderId === currentUser.id ? call.receiverId : call.senderId;
+                    const user = allUsers.find(u => u.id === userId);
                     if (user) {
                         selectUser(user);
                         if (call.type === 'voice') {
@@ -1568,19 +1445,44 @@
                     }
                 });
                 
-                // Add event listener to the whole item
-                historyItem.addEventListener('click', () => {
-                    const user = allUsers.find(u => u.id === call.userId);
-                    if (user) {
-                        selectUser(user);
-                    }
-                });
-                
                 callsHistory.appendChild(historyItem);
             });
         }
-        
-        // Enable communication buttons
+
+        // =============================================
+        // UTILITY FUNCTIONS
+        // =============================================
+        function getConversationId(user1Id, user2Id) {
+            return [user1Id, user2Id].sort().join('_');
+        }
+
+        function getUserNameById(userId) {
+            const user = allUsers.find(u => u.id === userId) || 
+                        JSON.parse(localStorage.getItem('fzone_users')).find(u => u.id === userId);
+            return user ? `${user.firstName} ${user.lastName}` : 'Unknown User';
+        }
+
+        function getUserAvatarById(userId) {
+            const user = allUsers.find(u => u.id === userId) || 
+                        JSON.parse(localStorage.getItem('fzone_users')).find(u => u.id === userId);
+            return user ? (user.avatar || user.firstName.charAt(0) + user.lastName.charAt(0)) : 'US';
+        }
+
+        function showNotification(type, message) {
+            notificationMessage.textContent = message;
+            
+            if (type === 'message') {
+                notificationIcon.style.background = '#6a11cb';
+                notificationIconClass.className = 'fas fa-comment';
+            } else if (type === 'call') {
+                notificationIcon.style.background = '#00b09b';
+                notificationIconClass.className = 'fas fa-phone';
+            }
+            
+            notification.classList.add('show');
+            setTimeout(() => notification.classList.remove('show'), 5000);
+        }
+
         function enableCommunicationButtons() {
             chatBtn.style.opacity = '1';
             voiceBtn.style.opacity = '1';
@@ -1589,8 +1491,7 @@
             voiceBtn.style.cursor = 'pointer';
             videoBtn.style.cursor = 'pointer';
         }
-        
-        // Disable communication buttons
+
         function disableCommunicationButtons() {
             chatBtn.style.opacity = '0.5';
             voiceBtn.style.opacity = '0.5';
@@ -1599,17 +1500,30 @@
             voiceBtn.style.cursor = 'not-allowed';
             videoBtn.style.cursor = 'not-allowed';
         }
-        
-        // Logout function
-        function logout() {
-            clearInterval(messageInterval);
-            clearInterval(syncInterval);
-            markUserAsOffline();
-            localStorage.removeItem('fzone_current_user');
-            window.location.href = 'registration.html'; // Redirect to login page
+
+        function saveConversationsToStorage() {
+            localStorage.setItem('fzone_conversations', JSON.stringify(conversations));
         }
-        
-        // Initialize the dashboard when the page loads
+
+        function saveCallHistoryToStorage() {
+            localStorage.setItem('fzone_call_history', JSON.stringify(callHistory));
+        }
+
+        function logout() {
+            // Mark user as offline in Firebase
+            const userStatusRef = database.ref('onlineUsers/' + currentUser.id);
+            userStatusRef.remove();
+            
+            // Clear local storage
+            localStorage.removeItem('fzone_current_user');
+            
+            // Redirect to login
+            window.location.href = 'index.html';
+        }
+
+        // =============================================
+        // INITIALIZE DASHBOARD
+        // =============================================
         document.addEventListener('DOMContentLoaded', initDashboard);
     </script>
 </body>
