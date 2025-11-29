@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>F_Zone - Friends Zone</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
     <style>
         * {
             margin: 0;
@@ -72,6 +75,33 @@
             font-weight: 300;
         }
         
+        .stats-container {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 1.5rem 0;
+            flex-wrap: wrap;
+        }
+        
+        .stat-item {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px 25px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            display: block;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
         .emoji-container {
             display: flex;
             justify-content: center;
@@ -84,11 +114,19 @@
             cursor: pointer;
             transition: all 0.3s ease;
             filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+            animation: float 3s ease-in-out infinite;
         }
         
         .emoji:hover {
             transform: scale(1.3) rotate(10deg);
+            animation: none;
         }
+        
+        .emoji:nth-child(1) { animation-delay: 0s; }
+        .emoji:nth-child(2) { animation-delay: 0.2s; }
+        .emoji:nth-child(3) { animation-delay: 0.4s; }
+        .emoji:nth-child(4) { animation-delay: 0.6s; }
+        .emoji:nth-child(5) { animation-delay: 0.8s; }
         
         .friends-icon {
             width: 100px;
@@ -104,11 +142,13 @@
             border: 2px solid rgba(255, 255, 255, 0.3);
             transition: all 0.4s ease;
             cursor: pointer;
+            animation: pulse 2s infinite;
         }
         
         .friends-icon:hover {
             transform: scale(1.1) rotate(5deg);
             background: rgba(255, 255, 255, 0.3);
+            animation: none;
         }
         
         .friends-icon svg {
@@ -225,6 +265,12 @@
             }
         }
         
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
         .interactive-bg {
             position: absolute;
             top: 0;
@@ -289,6 +335,23 @@
             border-radius: 15px;
             transition: all 0.3s ease;
             cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .feature::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transition: left 0.5s;
+        }
+        
+        .feature:hover::before {
+            left: 100%;
         }
         
         .feature:hover {
@@ -403,6 +466,24 @@
             box-shadow: 0 8px 20px rgba(106, 17, 203, 0.5);
         }
         
+        .live-users {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px 15px;
+            border-radius: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            z-index: 100;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .live-users i {
+            color: #2ecc71;
+            margin-right: 5px;
+        }
+        
         @media (max-width: 768px) {
             h1 {
                 font-size: 2.5rem;
@@ -423,6 +504,18 @@
             .features {
                 flex-direction: column;
             }
+            
+            .stats-container {
+                gap: 15px;
+            }
+            
+            .stat-item {
+                padding: 10px 15px;
+            }
+            
+            .stat-number {
+                font-size: 1.5rem;
+            }
         }
         
         @media (max-width: 480px) {
@@ -437,6 +530,12 @@
             .start-btn {
                 padding: 12px 30px;
                 font-size: 1.1rem;
+            }
+            
+            .live-users {
+                bottom: 10px;
+                right: 10px;
+                font-size: 0.8rem;
             }
         }
     </style>
@@ -460,6 +559,22 @@
             </div>
             <h1>Welcome to F_Zone</h1>
             <p class="subtitle">Your friendly space to connect, share, and have fun together!</p>
+            
+            <div class="stats-container">
+                <div class="stat-item">
+                    <span class="stat-number" id="onlineUsers">0</span>
+                    <span class="stat-label">Online Now</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="totalUsers">0</span>
+                    <span class="stat-label">Total Users</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="messagesSent">0</span>
+                    <span class="stat-label">Messages Sent</span>
+                </div>
+            </div>
+            
             <div class="emoji-container">
                 <div class="emoji" data-emoji="👋">👋</div>
                 <div class="emoji" data-emoji="😊">😊</div>
@@ -497,6 +612,11 @@
         </div>
     </main>
     
+    <!-- Live Users Counter -->
+    <div class="live-users" id="liveUsers">
+        <i class="fas fa-circle"></i> <span id="liveUsersCount">0</span> users online now
+    </div>
+    
     <!-- Welcome Modal -->
     <div class="welcome-modal" id="welcomeModal">
         <div class="modal-content">
@@ -507,6 +627,58 @@
     </div>
 
     <script>
+        // =============================================
+        // FIREBASE CONFIGURATION
+        // =============================================
+        // REPLACE WITH YOUR ACTUAL FIREBASE CONFIG
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "your-project.firebaseapp.com",
+            databaseURL: "https://your-project-default-rtdb.firebaseio.com",
+            projectId: "your-project-id",
+            storageBucket: "your-project.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "your-app-id"
+        };
+
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // =============================================
+        // FIREBASE FUNCTIONS
+        // =============================================
+        function initializeFirebaseListeners() {
+            // Listen for online users count
+            const onlineUsersRef = database.ref('onlineUsers');
+            onlineUsersRef.on('value', (snapshot) => {
+                const onlineUsers = snapshot.val() || {};
+                const onlineCount = Object.keys(onlineUsers).length;
+                
+                document.getElementById('onlineUsers').textContent = onlineCount;
+                document.getElementById('liveUsersCount').textContent = onlineCount;
+                
+                // Update total users (online + registered)
+                const registeredUsersRef = database.ref('registeredUsers');
+                registeredUsersRef.once('value').then((snapshot) => {
+                    const registeredUsers = snapshot.val() || {};
+                    const totalCount = Object.keys(registeredUsers).length;
+                    document.getElementById('totalUsers').textContent = totalCount;
+                });
+            });
+            
+            // Listen for messages count
+            const messagesRef = database.ref('messages');
+            messagesRef.on('value', (snapshot) => {
+                const messages = snapshot.val() || {};
+                const messagesCount = Object.keys(messages).length;
+                document.getElementById('messagesSent').textContent = messagesCount;
+            });
+        }
+
+        // =============================================
+        // INTERACTIVE ELEMENTS
+        // =============================================
         // Interactive background particles
         const interactiveBg = document.getElementById('interactiveBg');
         const colors = ['#ff9a00', '#6a11cb', '#2575fc', '#ff6a00', '#ffffff'];
@@ -639,7 +811,7 @@
         // Continue button to redirect to registration
         continueBtn.addEventListener('click', function() {
             // Redirect to registration page
-            window.location.href = 'registration.html';
+            window.location.href = 'index.html';
         });
         
         // Friends icon interaction
@@ -701,9 +873,40 @@
             }
         }
         
-        // Add some initial confetti when page loads
+        // =============================================
+        // INITIALIZATION
+        // =============================================
         window.addEventListener('load', () => {
+            // Initialize Firebase listeners
+            initializeFirebaseListeners();
+            
+            // Add some initial confetti
             setTimeout(createConfetti, 1000);
+            
+            // Add entrance animation to features
+            const features = document.querySelectorAll('.feature');
+            features.forEach((feature, index) => {
+                feature.style.opacity = '0';
+                feature.style.transform = 'translateY(30px)';
+                
+                setTimeout(() => {
+                    feature.animate([
+                        { opacity: 0, transform: 'translateY(30px)' },
+                        { opacity: 1, transform: 'translateY(0)' }
+                    ], {
+                        duration: 600,
+                        easing: 'ease-out',
+                        fill: 'forwards'
+                    });
+                }, 300 + (index * 200));
+            });
+        });
+
+        // Close modal when clicking outside
+        welcomeModal.addEventListener('click', (e) => {
+            if (e.target === welcomeModal) {
+                welcomeModal.classList.remove('active');
+            }
         });
     </script>
 </body>
