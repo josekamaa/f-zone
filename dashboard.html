@@ -663,6 +663,48 @@
             color: #2ecc71;
         }
         
+        /* Notification Styles */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 1000;
+            transform: translateX(150%);
+            transition: transform 0.3s ease;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        
+        .notification-message {
+            flex: 1;
+        }
+        
+        .notification-close {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #999;
+        }
+        
         @media (max-width: 1024px) {
             .dashboard-content {
                 flex-direction: column;
@@ -824,6 +866,19 @@
         </div>
     </div>
 
+    <!-- Notification Element -->
+    <div class="notification" id="notification">
+        <div class="notification-icon" id="notificationIcon" style="background: #6a11cb;">
+            <i class="fas fa-comment" id="notificationIconClass"></i>
+        </div>
+        <div class="notification-message" id="notificationMessage">
+            New message from User
+        </div>
+        <button class="notification-close" id="notificationClose">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+
     <script>
         // DOM Elements
         const usersList = document.getElementById('usersList');
@@ -847,6 +902,11 @@
         const messagesHistory = document.getElementById('messagesHistory');
         const callsHistory = document.getElementById('callsHistory');
         const historyTabs = document.querySelectorAll('.history-tab');
+        const notification = document.getElementById('notification');
+        const notificationIcon = document.getElementById('notificationIcon');
+        const notificationIconClass = document.getElementById('notificationIconClass');
+        const notificationMessage = document.getElementById('notificationMessage');
+        const notificationClose = document.getElementById('notificationClose');
         
         // Global variables
         let currentUser = null;
@@ -855,6 +915,8 @@
         let conversations = {};
         let callHistory = [];
         let messageInterval = null;
+        let syncInterval = null;
+        let lastSyncTime = 0;
         
         // Initialize dashboard
         function initDashboard() {
@@ -907,26 +969,59 @@
                 });
             });
             
+            // Notification close event
+            notificationClose.addEventListener('click', () => {
+                notification.classList.remove('show');
+            });
+            
             // Initialize communication buttons as disabled
             disableCommunicationButtons();
             
             // Set up periodic message checking (simulates real-time updates)
             messageInterval = setInterval(checkForNewMessages, 1000);
             
+            // Set up periodic sync with server
+            syncInterval = setInterval(syncWithServer, 2000);
+            
             // Load history
             loadHistory();
+            
+            // Mark user as online
+            markUserAsOnline();
+        }
+        
+        // Mark user as online in the shared storage
+        function markUserAsOnline() {
+            const onlineUsers = JSON.parse(localStorage.getItem('fzone_online_users')) || {};
+            onlineUsers[currentUser.id] = {
+                id: currentUser.id,
+                firstName: currentUser.firstName,
+                lastName: currentUser.lastName,
+                username: currentUser.username,
+                avatar: currentUser.firstName.charAt(0) + currentUser.lastName.charAt(0),
+                lastSeen: Date.now()
+            };
+            localStorage.setItem('fzone_online_users', JSON.stringify(onlineUsers));
+        }
+        
+        // Mark user as offline
+        function markUserAsOffline() {
+            const onlineUsers = JSON.parse(localStorage.getItem('fzone_online_users')) || {};
+            delete onlineUsers[currentUser.id];
+            localStorage.setItem('fzone_online_users', JSON.stringify(onlineUsers));
         }
         
         // Load users from localStorage
         function loadUsers() {
             const storedUsers = JSON.parse(localStorage.getItem('fzone_users')) || [];
+            const onlineUsers = JSON.parse(localStorage.getItem('fzone_online_users')) || {};
             
             // Filter out the current user
             allUsers = storedUsers.filter(user => user.id !== currentUser.id);
             
-            // Add online status to users (in a real app, this would come from a server)
+            // Add online status to users based on online users list
             allUsers.forEach(user => {
-                user.status = 'online'; // Default status
+                user.status = onlineUsers[user.id] ? 'online' : 'offline';
                 user.avatar = user.firstName.charAt(0) + user.lastName.charAt(0);
             });
             
@@ -934,8 +1029,8 @@
             renderUsersList();
             
             // Update online count
-            const onlineUsers = allUsers.filter(user => user.status === 'online').length;
-            onlineCount.textContent = `${onlineUsers} Online`;
+            const onlineUsersCount = allUsers.filter(user => user.status === 'online').length;
+            onlineCount.textContent = `${onlineUsersCount} Online`;
             
             // Initialize conversations object
             allUsers.forEach(user => {
@@ -1108,6 +1203,19 @@
             
             // Update history
             updateMessageHistory();
+            
+            // Save message to shared storage for real-time communication
+            saveMessageToSharedStorage(message);
+        }
+        
+        // Save message to shared storage for real-time communication
+        function saveMessageToSharedStorage(message) {
+            const sharedMessages = JSON.parse(localStorage.getItem('fzone_shared_messages')) || [];
+            sharedMessages.push({
+                ...message,
+                id: Date.now().toString() + Math.random().toString(36).substr(2, 5)
+            });
+            localStorage.setItem('fzone_shared_messages', JSON.stringify(sharedMessages));
         }
         
         // Check for new messages (simulates real-time updates)
@@ -1125,6 +1233,99 @@
                 loadChatMessages();
                 updateMessageHistory();
             }
+        }
+        
+        // Sync with server (shared storage)
+        function syncWithServer() {
+            // Update online status
+            markUserAsOnline();
+            
+            // Check for new online users
+            const onlineUsers = JSON.parse(localStorage.getItem('fzone_online_users')) || {};
+            const storedUsers = JSON.parse(localStorage.getItem('fzone_users')) || [];
+            
+            // Update user statuses
+            allUsers.forEach(user => {
+                user.status = onlineUsers[user.id] ? 'online' : 'offline';
+            });
+            
+            // Re-render users list
+            renderUsersList();
+            
+            // Check for new shared messages
+            const sharedMessages = JSON.parse(localStorage.getItem('fzone_shared_messages')) || [];
+            const newMessages = sharedMessages.filter(msg => 
+                msg.timestamp > lastSyncTime && 
+                (msg.receiverId === currentUser.id || msg.senderId === currentUser.id)
+            );
+            
+            if (newMessages.length > 0) {
+                // Process new messages
+                newMessages.forEach(message => {
+                    const conversationId = getConversationId(message.senderId, message.receiverId);
+                    if (!conversations[conversationId]) {
+                        conversations[conversationId] = [];
+                    }
+                    
+                    // Check if message already exists
+                    const messageExists = conversations[conversationId].some(
+                        msg => msg.timestamp === message.timestamp && msg.text === message.text
+                    );
+                    
+                    if (!messageExists) {
+                        conversations[conversationId].push(message);
+                        
+                        // Show notification if not in the conversation
+                        if (selectedUser && selectedUser.id !== message.senderId) {
+                            showNotification('message', `${getUserNameById(message.senderId)}: ${message.text}`);
+                        }
+                    }
+                });
+                
+                // Save updated conversations
+                saveMessagesToStorage();
+                
+                // Update UI if needed
+                if (selectedUser) {
+                    const currentConversationId = getConversationId(currentUser.id, selectedUser.id);
+                    if (newMessages.some(msg => 
+                        getConversationId(msg.senderId, msg.receiverId) === currentConversationId)) {
+                        loadChatMessages();
+                    }
+                }
+                
+                updateMessageHistory();
+            }
+            
+            // Update last sync time
+            lastSyncTime = Date.now();
+        }
+        
+        // Get user name by ID
+        function getUserNameById(userId) {
+            const user = allUsers.find(u => u.id === userId) || 
+                        JSON.parse(localStorage.getItem('fzone_users')).find(u => u.id === userId);
+            return user ? `${user.firstName} ${user.lastName}` : 'Unknown User';
+        }
+        
+        // Show notification
+        function showNotification(type, message) {
+            notificationMessage.textContent = message;
+            
+            if (type === 'message') {
+                notificationIcon.style.background = '#6a11cb';
+                notificationIconClass.className = 'fas fa-comment';
+            } else if (type === 'call') {
+                notificationIcon.style.background = '#00b09b';
+                notificationIconClass.className = 'fas fa-phone';
+            }
+            
+            notification.classList.add('show');
+            
+            // Auto hide after 5 seconds
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 5000);
         }
         
         // Load stored messages from localStorage
@@ -1170,6 +1371,9 @@
             saveCallHistory();
             updateCallHistory();
             
+            // Save call to shared storage
+            saveCallToSharedStorage(call);
+            
             // In a real app, this would initiate a WebRTC voice call
         }
         
@@ -1200,7 +1404,20 @@
             saveCallHistory();
             updateCallHistory();
             
+            // Save call to shared storage
+            saveCallToSharedStorage(call);
+            
             // In a real app, this would initiate a WebRTC video call
+        }
+        
+        // Save call to shared storage
+        function saveCallToSharedStorage(call) {
+            const sharedCalls = JSON.parse(localStorage.getItem('fzone_shared_calls')) || [];
+            sharedCalls.push({
+                ...call,
+                id: Date.now().toString() + Math.random().toString(36).substr(2, 5)
+            });
+            localStorage.setItem('fzone_shared_calls', JSON.stringify(sharedCalls));
         }
         
         // Load call history from localStorage
@@ -1386,6 +1603,8 @@
         // Logout function
         function logout() {
             clearInterval(messageInterval);
+            clearInterval(syncInterval);
+            markUserAsOffline();
             localStorage.removeItem('fzone_current_user');
             window.location.href = 'registration.html'; // Redirect to login page
         }
