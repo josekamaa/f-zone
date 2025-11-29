@@ -377,6 +377,66 @@
             display: none !important;
         }
         
+        /* Online Users Preview */
+        .online-users-preview {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            padding: 1.5rem;
+            margin-top: 2rem;
+            width: 100%;
+            max-width: 600px;
+        }
+        
+        .online-users-preview h3 {
+            color: #333;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+            text-align: center;
+        }
+        
+        .online-users-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+        
+        .online-user-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #f8f9ff;
+            padding: 8px 12px;
+            border-radius: 20px;
+            border: 1px solid #e1e5ee;
+        }
+        
+        .online-user-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 0.8rem;
+        }
+        
+        .online-user-name {
+            font-size: 0.9rem;
+            color: #333;
+        }
+        
+        .online-status {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #2ecc71;
+        }
+        
         @media (max-width: 768px) {
             h1 {
                 font-size: 2.5rem;
@@ -393,6 +453,10 @@
             
             .registration-container, .login-container {
                 padding: 2rem 1.5rem;
+            }
+            
+            .online-users-list {
+                justify-content: flex-start;
             }
         }
         
@@ -549,6 +613,14 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- Online Users Preview -->
+            <div class="online-users-preview">
+                <h3>Currently Online</h3>
+                <div class="online-users-list" id="onlineUsersList">
+                    <!-- Online users will be dynamically added here -->
+                </div>
+            </div>
         </div>
         
         <!-- Login Page -->
@@ -607,6 +679,14 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- Online Users Preview -->
+            <div class="online-users-preview">
+                <h3>Currently Online</h3>
+                <div class="online-users-list" id="loginOnlineUsersList">
+                    <!-- Online users will be dynamically added here -->
+                </div>
+            </div>
         </div>
     </div>
 
@@ -614,6 +694,7 @@
         // User data storage (in a real app, this would be a database)
         let users = JSON.parse(localStorage.getItem('fzone_users')) || [];
         let currentUser = null;
+        let onlineUsersInterval = null;
         
         // DOM Elements
         const registrationPage = document.getElementById('registrationPage');
@@ -624,6 +705,9 @@
         
         const showLoginLink = document.getElementById('showLoginLink');
         const showRegisterLink = document.getElementById('showRegisterLink');
+        
+        const onlineUsersList = document.getElementById('onlineUsersList');
+        const loginOnlineUsersList = document.getElementById('loginOnlineUsersList');
         
         // Password strength indicator
         const passwordInput = document.getElementById('password');
@@ -765,7 +849,8 @@
                     interests: selectedInterests,
                     bio: document.getElementById('bio').value,
                     newsletter: document.getElementById('newsletter').checked,
-                    joinDate: new Date().toISOString()
+                    joinDate: new Date().toISOString(),
+                    avatar: firstName.charAt(0) + lastName.charAt(0)
                 };
                 
                 // Save user to storage
@@ -824,12 +909,63 @@
                 // Successful login - redirect to dashboard.html
                 currentUser = user;
                 localStorage.setItem('fzone_current_user', JSON.stringify(user));
+                
+                // Mark user as online
+                markUserAsOnline(user);
+                
                 window.location.href = 'dashboard.html';
             } else {
                 // Failed login
                 document.getElementById('loginUsernameError').textContent = 'Invalid username/email or password';
                 document.getElementById('loginUsernameError').style.display = 'block';
             }
+        }
+        
+        // Mark user as online in the shared storage
+        function markUserAsOnline(user) {
+            const onlineUsers = JSON.parse(localStorage.getItem('fzone_online_users')) || {};
+            onlineUsers[user.id] = {
+                id: user.id,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                username: user.username,
+                avatar: user.avatar,
+                lastSeen: Date.now()
+            };
+            localStorage.setItem('fzone_online_users', JSON.stringify(onlineUsers));
+        }
+        
+        // Update online users display
+        function updateOnlineUsersDisplay() {
+            const onlineUsers = JSON.parse(localStorage.getItem('fzone_online_users')) || {};
+            const users = JSON.parse(localStorage.getItem('fzone_users')) || [];
+            
+            // Filter out users that haven't been active in the last 5 minutes
+            const now = Date.now();
+            const activeUsers = Object.values(onlineUsers).filter(user => 
+                now - user.lastSeen < 5 * 60 * 1000
+            );
+            
+            // Update both online users lists
+            [onlineUsersList, loginOnlineUsersList].forEach(listElement => {
+                listElement.innerHTML = '';
+                
+                if (activeUsers.length === 0) {
+                    listElement.innerHTML = '<p style="text-align: center; color: #666; width: 100%;">No users online right now</p>';
+                    return;
+                }
+                
+                activeUsers.forEach(user => {
+                    const userBadge = document.createElement('div');
+                    userBadge.className = 'online-user-badge';
+                    userBadge.innerHTML = `
+                        <div class="online-user-avatar">${user.avatar}</div>
+                        <div class="online-user-name">${user.firstName}</div>
+                        <div class="online-status"></div>
+                    `;
+                    listElement.appendChild(userBadge);
+                });
+            });
         }
         
         // Show registration page
@@ -868,7 +1004,30 @@
         }
         
         // Initialize the app
-        checkLoggedIn();
+        function initApp() {
+            checkLoggedIn();
+            
+            // Start updating online users display
+            updateOnlineUsersDisplay();
+            onlineUsersInterval = setInterval(updateOnlineUsersDisplay, 2000);
+            
+            // Clean up old online users periodically
+            setInterval(cleanupOldOnlineUsers, 30000);
+        }
+        
+        // Clean up users that haven't been active
+        function cleanupOldOnlineUsers() {
+            const onlineUsers = JSON.parse(localStorage.getItem('fzone_online_users')) || {};
+            const now = Date.now();
+            
+            Object.keys(onlineUsers).forEach(userId => {
+                if (now - onlineUsers[userId].lastSeen > 5 * 60 * 1000) {
+                    delete onlineUsers[userId];
+                }
+            });
+            
+            localStorage.setItem('fzone_online_users', JSON.stringify(onlineUsers));
+        }
         
         // Real-time validation for fields
         document.querySelectorAll('input').forEach(input => {
@@ -880,6 +1039,9 @@
                 }
             });
         });
+        
+        // Initialize the app when the page loads
+        document.addEventListener('DOMContentLoaded', initApp);
     </script>
 </body>
 </html>
