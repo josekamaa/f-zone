@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register - F_Zone</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Firebase SDK -->
+    <!-- Firebase SDK (COMPAT VERSION) -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
@@ -555,19 +555,19 @@
         // ========================================
         // FIREBASE CONFIGURATION
         // ========================================
-        // Replace with your actual Firebase config from Firebase Console
-       const firebaseConfig = {
-  apiKey: "AIzaSyA1p1cDsJ2egSCn9hoZepAd5n6Zml6XYQw",
-  authDomain: "f-zone-d4c7f.firebaseapp.com",
-  databaseURL: "https://f-zone-d4c7f-default-rtdb.firebaseio.com",
-  projectId: "f-zone-d4c7f",
-  storageBucket: "f-zone-d4c7f.firebasestorage.app",
-  messagingSenderId: "976112790038",
-  appId: "1:976112790038:web:afab55ad164b3d7f9d2337",
-  measurementId: "G-NRFSYWMH0M"
-};
+        // USING YOUR ACTUAL FIREBASE CONFIG
+        const firebaseConfig = {
+            apiKey: "AIzaSyA1p1cDsJ2egSCn9hoZepAd5n6Zml6XYQw",
+            authDomain: "f-zone-d4c7f.firebaseapp.com",
+            databaseURL: "https://f-zone-d4c7f-default-rtdb.firebaseio.com",
+            projectId: "f-zone-d4c7f",
+            storageBucket: "f-zone-d4c7f.firebasestorage.app",
+            messagingSenderId: "976112790038",
+            appId: "1:976112790038:web:afab55ad164b3d7f9d2337",
+            measurementId: "G-NRFSYWMH0M"
+        };
         
-        // Initialize Firebase
+        // Initialize Firebase (COMPAT/NAMESPACED VERSION)
         const app = firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
