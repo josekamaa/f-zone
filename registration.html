@@ -365,6 +365,39 @@
             to { transform: translateY(0); opacity: 1; }
         }
         
+        .debug-console {
+            background: #f8f9ff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+            font-family: monospace;
+            font-size: 0.8rem;
+            max-height: 150px;
+            overflow-y: auto;
+            display: none;
+        }
+        
+        .debug-console h4 {
+            margin: 0 0 0.5rem 0;
+            color: #666;
+        }
+        
+        .debug-console .log {
+            color: #666;
+            margin: 0.2rem 0;
+        }
+        
+        .debug-console .error {
+            color: #ff4757;
+            margin: 0.2rem 0;
+        }
+        
+        .debug-console .success {
+            color: #4caf50;
+            margin: 0.2rem 0;
+        }
+        
         .home-link {
             display: inline-block;
             margin-top: 1rem;
@@ -485,6 +518,12 @@
                 <p>Welcome to F_Zone! Redirecting you to login...</p>
             </div>
             
+            <!-- Debug Console -->
+            <div class="debug-console" id="debugConsole">
+                <h4>Debug Console:</h4>
+                <div id="debugLogs"></div>
+            </div>
+            
             <!-- Registration Form -->
             <form id="registrationForm">
                 <div class="form-group">
@@ -580,12 +619,36 @@
         const registrationForm = document.getElementById('registrationForm');
         const registerBtn = document.getElementById('registerBtn');
         const successMessage = document.getElementById('successMessage');
+        const debugConsole = document.getElementById('debugConsole');
+        const debugLogs = document.getElementById('debugLogs');
         const interactiveBg = document.getElementById('interactiveBg');
         const togglePassword = document.getElementById('togglePassword');
         const toggleConfirmPassword = document.getElementById('toggleConfirmPassword');
         const passwordInput = document.getElementById('password');
         const confirmPasswordInput = document.getElementById('confirmPassword');
         const termsLink = document.getElementById('termsLink');
+        
+        // ========================================
+        // Debug Logging
+        // ========================================
+        function logDebug(message, type = 'log') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logElement = document.createElement('div');
+            logElement.className = type;
+            logElement.textContent = `[${timestamp}] ${message}`;
+            debugLogs.appendChild(logElement);
+            debugConsole.style.display = 'block';
+            debugLogs.scrollTop = debugLogs.scrollHeight;
+            
+            // Also log to browser console
+            if (type === 'error') {
+                console.error(message);
+            } else if (type === 'success') {
+                console.log('%c' + message, 'color: green');
+            } else {
+                console.log(message);
+            }
+        }
         
         // ========================================
         // Interactive Background Particles
@@ -656,6 +719,7 @@
             document.getElementById(inputId).classList.add('error');
             document.getElementById(errorId).textContent = message;
             document.getElementById(errorId).style.display = 'block';
+            logDebug(`Validation error: ${message}`, 'error');
         }
         
         function hideError(inputId, errorId) {
@@ -664,6 +728,7 @@
         }
         
         function validateForm() {
+            logDebug('Starting form validation...');
             let isValid = true;
             
             const displayName = document.getElementById('displayName').value.trim();
@@ -671,6 +736,11 @@
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
             const termsChecked = document.getElementById('terms').checked;
+            
+            logDebug(`Display Name: ${displayName}`);
+            logDebug(`Email: ${email}`);
+            logDebug(`Password length: ${password.length}`);
+            logDebug(`Terms checked: ${termsChecked}`);
             
             // Validate display name
             if (displayName.length < 2) {
@@ -711,6 +781,7 @@
                 isValid = false;
             }
             
+            logDebug(`Form validation result: ${isValid ? 'PASS' : 'FAIL'}`);
             return isValid;
         }
         
@@ -720,13 +791,18 @@
         registrationForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
+            logDebug('=== REGISTRATION STARTED ===');
+            
             if (!validateForm()) {
+                logDebug('Form validation failed, stopping registration');
                 return;
             }
             
             const displayName = document.getElementById('displayName').value.trim();
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
+            
+            logDebug(`Attempting registration for: ${email}`);
             
             // Add ripple effect to button
             const ripple = document.createElement('span');
@@ -748,14 +824,22 @@
             registerBtn.textContent = '';
             
             try {
+                logDebug('Step 1: Creating Firebase user...');
+                
                 // Create user with Firebase Authentication
                 const userCredential = await auth.createUserWithEmailAndPassword(email, password);
                 const user = userCredential.user;
+                
+                logDebug(`Step 1 SUCCESS: User created with UID: ${user.uid}`);
+                logDebug('Step 2: Updating user profile...');
                 
                 // Update user profile with display name
                 await user.updateProfile({
                     displayName: displayName
                 });
+                
+                logDebug('Step 2 SUCCESS: Profile updated');
+                logDebug('Step 3: Saving user data to Firestore...');
                 
                 // Save additional user data to Firestore
                 await db.collection('users').doc(user.uid).set({
@@ -769,6 +853,9 @@
                     chatRooms: []
                 });
                 
+                logDebug('Step 3 SUCCESS: User data saved to Firestore');
+                logDebug('=== REGISTRATION COMPLETE ===', 'success');
+                
                 // Show success message
                 successMessage.style.display = 'block';
                 registrationForm.style.display = 'none';
@@ -778,10 +865,14 @@
                 
                 // Redirect to login page after 3 seconds
                 setTimeout(() => {
+                    logDebug('Redirecting to login page...');
                     window.location.href = 'login.html';
                 }, 3000);
                 
             } catch (error) {
+                logDebug(`=== REGISTRATION FAILED: ${error.code} ===`, 'error');
+                logDebug(`Error message: ${error.message}`, 'error');
+                
                 // Handle errors
                 registerBtn.disabled = false;
                 registerBtn.classList.remove('loading');
@@ -806,12 +897,17 @@
                         errorMessage += 'Email/password accounts are not enabled.';
                         alert('Registration method not enabled. Please contact support.');
                         break;
+                    case 'auth/network-request-failed':
+                        errorMessage += 'Network error. Please check your internet connection.';
+                        alert('Network error. Please check your internet connection.');
+                        break;
                     default:
                         errorMessage += error.message;
                         alert(errorMessage);
                 }
                 
-                console.error('Registration error:', error);
+                logDebug(`User error message: ${errorMessage}`, 'error');
+                console.error('Full error details:', error);
             }
         });
         
@@ -947,6 +1043,34 @@
                 hideError('confirmPassword', 'confirmPasswordError');
             }
         });
+        
+        // ========================================
+        // Test Firebase Connection
+        // ========================================
+        logDebug('Page loaded. Testing Firebase connection...');
+        
+        // Test if Firebase is properly initialized
+        try {
+            if (app) {
+                logDebug('Firebase app initialized successfully', 'success');
+            } else {
+                logDebug('Firebase app not initialized', 'error');
+            }
+        } catch (error) {
+            logDebug(`Firebase initialization error: ${error.message}`, 'error');
+        }
+        
+        // Test Firestore connection
+        try {
+            const testDoc = db.collection('test').doc('connection');
+            testDoc.get().then(() => {
+                logDebug('Firestore connection test: SUCCESS', 'success');
+            }).catch((error) => {
+                logDebug(`Firestore connection test: FAILED - ${error.message}`, 'error');
+            });
+        } catch (error) {
+            logDebug(`Firestore test setup error: ${error.message}`, 'error');
+        }
     </script>
 </body>
 </html>
