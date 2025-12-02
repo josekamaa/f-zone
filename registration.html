@@ -3,854 +3,305 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register - F_Zone | Connect & Share</title>
+    <title>Test Appwrite Connection - F_Zone</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- Appwrite SDK -->
-    <script src="https://cdn.jsdelivr.net/npm/appwrite@13.0.0"></script>
-    
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Poppins', sans-serif;
-        }
-        
-        :root {
-            --primary: #6a11cb;
-            --secondary: #2575fc;
-            --accent: #ff9a00;
-            --accent-dark: #ff6a00;
-            --light: #f5f7fa;
-            --dark: #333;
-            --gray: #555;
-            --white: #fff;
-            --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            --transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            --error: #ff4757;
-            --success: #2ed573;
-            --info: #2e86de;
+            font-family: Arial, sans-serif;
         }
         
         body {
-            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 100%);
             min-height: 100vh;
             display: flex;
-            flex-direction: column;
+            justify-content: center;
             align-items: center;
-            overflow-x: hidden;
-            color: var(--white);
             padding: 20px;
         }
         
-        /* Glassmorphism effect */
-        .glass {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: var(--shadow);
-        }
-        
-        header {
+        .test-container {
             width: 100%;
-            max-width: 1200px;
-            background: linear-gradient(45deg, var(--primary) 0%, var(--secondary) 100%);
-            color: var(--white);
-            text-align: center;
-            padding: 2rem 1rem;
-            border-radius: 20px;
-            position: relative;
-            overflow: hidden;
-            margin-bottom: 2rem;
-        }
-        
-        .header-bg {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(255, 154, 0, 0.15) 0%, transparent 50%),
-                radial-gradient(circle at 40% 80%, rgba(37, 117, 252, 0.1) 0%, transparent 50%);
-            z-index: 0;
-        }
-        
-        .header-content {
-            position: relative;
-            z-index: 2;
+            max-width: 600px;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
         }
         
         h1 {
-            font-size: 2.8rem;
-            margin-bottom: 0.5rem;
-            letter-spacing: 2px;
-            background: linear-gradient(to right, #fff, #e0f7ff);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            font-weight: 800;
-            text-transform: uppercase;
-            position: relative;
-            display: inline-block;
-        }
-        
-        h1::after {
-            content: '';
-            position: absolute;
-            bottom: -10px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 150px;
-            height: 4px;
-            background: linear-gradient(to right, var(--accent), var(--accent-dark));
-            border-radius: 2px;
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
         }
         
         .subtitle {
-            font-size: 1.2rem;
-            opacity: 0.9;
-            margin: 1rem auto;
-            font-weight: 300;
-            max-width: 600px;
-            line-height: 1.5;
-        }
-        
-        .register-container {
-            width: 100%;
-            max-width: 500px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 25px;
-            overflow: hidden;
-            position: relative;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
-        }
-        
-        .register-form {
-            padding: 2.5rem;
-        }
-        
-        .success-message {
-            display: none;
+            color: #666;
             text-align: center;
-            padding: 2rem;
-            background: rgba(46, 213, 115, 0.1);
-            border-radius: 15px;
-            border: 1px solid rgba(46, 213, 115, 0.3);
-            margin-bottom: 1.5rem;
-            animation: fadeIn 0.5s ease;
-        }
-        
-        .success-message i {
-            font-size: 3.5rem;
-            color: var(--success);
-            margin-bottom: 1rem;
-            display: block;
-        }
-        
-        .success-message h3 {
-            font-size: 1.8rem;
-            margin-bottom: 0.5rem;
-            color: var(--success);
-        }
-        
-        .success-message p {
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 1.1rem;
-        }
-        
-        .form-header {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-        
-        .form-header h2 {
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
-            background: linear-gradient(to right, var(--accent), var(--white));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-        
-        .form-header p {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 1rem;
-        }
-        
-        .appwrite-config {
-            background: rgba(46, 134, 222, 0.1);
-            border: 1px solid rgba(46, 134, 222, 0.3);
-            border-radius: 12px;
-            padding: 1rem;
-            margin-bottom: 1.5rem;
-            display: none;
-        }
-        
-        .appwrite-config h4 {
-            color: var(--info);
-            margin-bottom: 0.5rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .appwrite-config p {
-            font-size: 0.9rem;
-            color: rgba(255, 255, 255, 0.7);
-            margin-bottom: 0.5rem;
-        }
-        
-        .config-input {
-            width: 100%;
-            padding: 10px;
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
-            color: var(--white);
-            font-size: 0.9rem;
-            margin-top: 5px;
-            font-family: monospace;
-        }
-        
-        .config-input:focus {
-            outline: none;
-            border-color: var(--info);
-        }
-        
-        .test-connection-btn {
-            background: rgba(46, 134, 222, 0.2);
-            color: var(--white);
-            border: 1px solid rgba(46, 134, 222, 0.4);
-            padding: 8px 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            margin-top: 10px;
-            transition: var(--transition);
-        }
-        
-        .test-connection-btn:hover {
-            background: rgba(46, 134, 222, 0.3);
+            margin-bottom: 30px;
         }
         
         .form-group {
-            margin-bottom: 1.5rem;
-            position: relative;
+            margin-bottom: 20px;
         }
         
-        .form-group label {
+        label {
             display: block;
-            margin-bottom: 0.5rem;
-            color: rgba(255, 255, 255, 0.9);
-            font-weight: 500;
-            font-size: 0.95rem;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: bold;
         }
         
-        .input-with-icon {
-            position: relative;
-        }
-        
-        .input-with-icon i {
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 1.1rem;
-        }
-        
-        .form-control {
+        input {
             width: 100%;
-            padding: 15px 15px 15px 45px;
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 12px;
-            color: var(--white);
-            font-size: 1rem;
-            transition: var(--transition);
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
         }
         
-        .form-control:focus {
+        input:focus {
             outline: none;
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(255, 154, 0, 0.1);
-            background: rgba(255, 255, 255, 0.12);
+            border-color: #6a11cb;
         }
         
-        .form-control::placeholder {
-            color: rgba(255, 255, 255, 0.5);
-        }
-        
-        .password-toggle {
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            color: rgba(255, 255, 255, 0.6);
-            cursor: pointer;
-            font-size: 1.1rem;
-            transition: var(--transition);
-        }
-        
-        .password-toggle:hover {
-            color: var(--accent);
-        }
-        
-        .form-group.checkbox {
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-        }
-        
-        .form-group.checkbox input {
-            margin-top: 5px;
-            accent-color: var(--accent);
-        }
-        
-        .form-group.checkbox label {
-            margin-bottom: 0;
-            font-size: 0.9rem;
-            line-height: 1.5;
-            color: rgba(255, 255, 255, 0.8);
-        }
-        
-        .terms-link {
-            color: var(--accent);
-            text-decoration: none;
-            font-weight: 500;
-            transition: var(--transition);
-        }
-        
-        .terms-link:hover {
-            text-decoration: underline;
-        }
-        
-        .error-message {
-            color: var(--error);
-            font-size: 0.85rem;
-            margin-top: 5px;
-            display: none;
-            animation: fadeIn 0.3s ease;
-        }
-        
-        .register-btn {
+        .btn {
             width: 100%;
-            background: linear-gradient(to right, var(--accent), var(--accent-dark));
-            color: var(--white);
-            font-size: 1.2rem;
-            font-weight: 600;
-            padding: 16px;
-            border-radius: 12px;
+            padding: 15px;
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            color: white;
             border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
             cursor: pointer;
-            transition: var(--transition);
-            margin-top: 1rem;
-            position: relative;
-            overflow: hidden;
-            letter-spacing: 1px;
+            transition: transform 0.3s;
+            margin: 10px 0;
         }
         
-        .register-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: 0.5s;
+        .btn:hover {
+            transform: translateY(-2px);
         }
         
-        .register-btn:hover::before {
-            left: 100%;
-        }
-        
-        .register-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 25px rgba(255, 106, 0, 0.4);
-        }
-        
-        .register-btn:active {
+        .btn:active {
             transform: translateY(0);
         }
         
-        .register-btn:disabled {
-            opacity: 0.7;
-            cursor: not-allowed;
-            transform: none !important;
+        .btn-secondary {
+            background: linear-gradient(to right, #ff9a00, #ff6a00);
         }
         
-        .login-link {
-            text-align: center;
-            margin-top: 2rem;
-            padding-top: 1.5rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 0.95rem;
-        }
-        
-        .login-link a {
-            color: var(--accent);
-            text-decoration: none;
-            font-weight: 600;
-            transition: var(--transition);
-        }
-        
-        .login-link a:hover {
-            text-decoration: underline;
-        }
-        
-        .floating-elements {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            overflow: hidden;
-            z-index: -1;
-        }
-        
-        .floating-element {
-            position: absolute;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 50%;
-            animation: float 20s infinite linear;
-        }
-        
-        .floating-element:nth-child(1) {
-            width: 80px;
-            height: 80px;
-            top: 10%;
-            left: 5%;
-            animation-delay: 0s;
-            animation-duration: 25s;
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
-        }
-        
-        .floating-element:nth-child(2) {
-            width: 50px;
-            height: 50px;
-            top: 70%;
-            left: 10%;
-            animation-delay: 3s;
-            animation-duration: 20s;
-            background: radial-gradient(circle, rgba(255,154,0,0.1) 0%, rgba(255,154,0,0) 70%);
-        }
-        
-        .floating-element:nth-child(3) {
-            width: 60px;
-            height: 60px;
-            top: 20%;
-            right: 10%;
-            animation-delay: 5s;
-            animation-duration: 22s;
-            background: radial-gradient(circle, rgba(37,117,252,0.1) 0%, rgba(37,117,252,0) 70%);
-        }
-        
-        @keyframes float {
-            0% {
-                transform: translateY(0) rotate(0deg) scale(1);
-            }
-            33% {
-                transform: translateY(-30px) rotate(120deg) scale(1.1);
-            }
-            66% {
-                transform: translateY(20px) rotate(240deg) scale(0.9);
-            }
-            100% {
-                transform: translateY(0) rotate(360deg) scale(1);
-            }
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-            20%, 40%, 60%, 80% { transform: translateX(5px); }
-        }
-        
-        .shake {
-            animation: shake 0.5s ease-in-out;
-        }
-        
-        .progress-bar {
-            height: 4px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 2px;
-            margin: 1.5rem 0;
-            overflow: hidden;
-            display: none;
-        }
-        
-        .progress {
-            height: 100%;
-            background: linear-gradient(to right, var(--primary), var(--secondary));
-            width: 0%;
-            transition: width 0.5s ease;
-            border-radius: 2px;
-        }
-        
-        .password-strength {
-            margin-top: 5px;
-            font-size: 0.85rem;
-            display: none;
-        }
-        
-        .strength-weak { color: var(--error); }
-        .strength-medium { color: #ffa502; }
-        .strength-strong { color: var(--success); }
-        
-        footer {
-            width: 100%;
-            text-align: center;
-            padding: 2rem;
-            margin-top: 2rem;
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 0.9rem;
-        }
-        
-        .console-log {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 300px;
-            max-height: 200px;
-            background: rgba(0, 0, 0, 0.8);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+        .result-box {
+            margin-top: 30px;
+            padding: 20px;
             border-radius: 10px;
-            padding: 15px;
-            font-family: monospace;
-            font-size: 0.8rem;
-            color: #00ff00;
-            overflow-y: auto;
-            z-index: 1000;
             display: none;
         }
         
-        .console-header {
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        
+        .result-box h3 {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .result-box p {
+            margin-bottom: 5px;
+            line-height: 1.5;
+        }
+        
+        .user-list {
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 5px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .user-item {
+            padding: 10px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
             display: flex;
             justify-content: space-between;
-            align-items: center;
+        }
+        
+        .user-item:last-child {
+            border-bottom: none;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            display: none;
+        }
+        
+        .loading i {
+            font-size: 24px;
+            color: #6a11cb;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .steps {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        
+        .steps h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+        
+        .steps ol {
+            margin-left: 20px;
+            color: #555;
+        }
+        
+        .steps li {
             margin-bottom: 10px;
-            color: var(--accent);
+            line-height: 1.5;
         }
         
-        .console-toggle {
-            background: none;
-            border: none;
-            color: var(--accent);
-            cursor: pointer;
-            font-size: 1.2rem;
-        }
-        
-        @media (max-width: 768px) {
-            h1 {
-                font-size: 2.2rem;
-            }
-            
-            .subtitle {
-                font-size: 1rem;
-            }
-            
-            .register-form {
-                padding: 1.5rem;
-            }
-            
-            .form-header h2 {
-                font-size: 1.8rem;
-            }
-            
-            .console-log {
-                width: 250px;
-                bottom: 10px;
-                right: 10px;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            h1 {
-                font-size: 1.8rem;
-            }
-            
-            .subtitle {
-                font-size: 0.9rem;
-            }
-            
-            .register-container {
-                max-width: 100%;
-            }
-            
-            body {
-                padding: 10px;
-            }
+        .steps code {
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
         }
     </style>
 </head>
 <body>
-    <header class="glass">
-        <div class="header-bg"></div>
-        <div class="header-content">
-            <h1>F_Zone</h1>
-            <p class="subtitle">Join our community of friends and start connecting today!</p>
-        </div>
-    </header>
-    
-    <div class="register-container glass">
-        <div class="floating-elements">
-            <div class="floating-element"></div>
-            <div class="floating-element"></div>
-            <div class="floating-element"></div>
+    <div class="test-container">
+        <h1><i class="fas fa-plug"></i> Test Appwrite Connection</h1>
+        <p class="subtitle">Check if your F_Zone database is connected and working</p>
+        
+        <div class="form-group">
+            <label for="projectId">Project ID</label>
+            <input type="text" id="projectId" placeholder="Enter your Appwrite Project ID">
         </div>
         
-        <div class="register-form">
-            <div class="success-message" id="successMessage">
-                <i class="fas fa-check-circle"></i>
-                <h3>Registration Successful!</h3>
-                <p>Welcome to F_Zone! Your account has been created successfully.</p>
-                <p>You are now being redirected...</p>
-            </div>
-            
-            <div class="form-header">
-                <h2>Create Account</h2>
-                <p>Fill in your details to join F_Zone</p>
-            </div>
-            
-            <!-- Appwrite Configuration Section -->
-            <div class="appwrite-config" id="appwriteConfig">
-                <h4><i class="fas fa-cog"></i> Appwrite Configuration</h4>
-                <p>Enter your Appwrite credentials below:</p>
-                
-                <div class="form-group">
-                    <label for="projectId">Project ID</label>
-                    <input type="text" id="projectId" class="config-input" placeholder="Enter your Project ID">
-                </div>
-                
-                <div class="form-group">
-                    <label for="databaseId">Database ID</label>
-                    <input type="text" id="databaseId" class="config-input" value="F_Zone_DB" placeholder="Enter Database ID">
-                </div>
-                
-                <div class="form-group">
-                    <label for="collectionId">Collection/Table ID</label>
-                    <input type="text" id="collectionId" class="config-input" value="users" placeholder="Enter Collection ID">
-                </div>
-                
-                <button class="test-connection-btn" id="testConnectionBtn">
-                    <i class="fas fa-plug"></i> Test Connection
-                </button>
-            </div>
-            
-            <div class="progress-bar" id="progressBar">
-                <div class="progress" id="progress"></div>
-            </div>
-            
-            <form id="registrationForm">
-                <div class="form-group">
-                    <label for="displayName">Display Name</label>
-                    <div class="input-with-icon">
-                        <i class="fas fa-user"></i>
-                        <input type="text" id="displayName" class="form-control" placeholder="Enter your display name" required>
-                    </div>
-                    <div class="error-message" id="nameError">Display name must be at least 2 characters</div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="email">Email Address</label>
-                    <div class="input-with-icon">
-                        <i class="fas fa-envelope"></i>
-                        <input type="email" id="email" class="form-control" placeholder="Enter your email" required>
-                    </div>
-                    <div class="error-message" id="emailError">Please enter a valid email address</div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="password">Password</label>
-                    <div class="input-with-icon">
-                        <i class="fas fa-lock"></i>
-                        <input type="password" id="password" class="form-control" placeholder="Create a password" required>
-                        <button type="button" class="password-toggle" id="togglePassword">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                    </div>
-                    <div class="password-strength" id="passwordStrength"></div>
-                    <div class="error-message" id="passwordError">Password must be at least 6 characters</div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="confirmPassword">Confirm Password</label>
-                    <div class="input-with-icon">
-                        <i class="fas fa-lock"></i>
-                        <input type="password" id="confirmPassword" class="form-control" placeholder="Confirm your password" required>
-                        <button type="button" class="password-toggle" id="toggleConfirmPassword">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                    </div>
-                    <div class="error-message" id="confirmPasswordError">Passwords do not match</div>
-                </div>
-                
-                <div class="form-group checkbox">
-                    <input type="checkbox" id="terms" required>
-                    <label for="terms">
-                        I agree to the <a href="#" class="terms-link" id="termsLink">Terms & Conditions</a> and 
-                        <a href="#" class="terms-link" id="privacyLink">Privacy Policy</a>
-                    </label>
-                </div>
-                
-                <button type="submit" class="register-btn" id="registerBtn">
-                    <span id="btnText">Create Account</span>
-                    <i class="fas fa-spinner fa-spin" id="btnSpinner" style="display: none;"></i>
-                </button>
-            </form>
-            
-            <div class="login-link">
-                Already have an account? <a href="#" id="loginLink">Login here</a>
-            </div>
+        <div class="form-group">
+            <label for="databaseId">Database ID</label>
+            <input type="text" id="databaseId" value="F_Zone_DB" placeholder="Enter Database ID">
+        </div>
+        
+        <div class="form-group">
+            <label for="collectionId">Collection ID</label>
+            <input type="text" id="collectionId" value="users" placeholder="Enter Collection ID">
+        </div>
+        
+        <button class="btn" id="testConnectionBtn">
+            <i class="fas fa-plug"></i> Test Connection
+        </button>
+        
+        <button class="btn btn-secondary" id="checkUsersBtn">
+            <i class="fas fa-users"></i> Check Registered Users
+        </button>
+        
+        <div class="loading" id="loading">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Testing connection...</p>
+        </div>
+        
+        <div class="result-box" id="resultBox"></div>
+        
+        <div class="steps">
+            <h3><i class="fas fa-info-circle"></i> How to get your Project ID:</h3>
+            <ol>
+                <li>Go to <a href="https://cloud.appwrite.io/" target="_blank">Appwrite Console</a></li>
+                <li>Click on your <strong>F_Zone</strong> project</li>
+                <li>Go to <strong>Settings</strong> or <strong>Overview</strong></li>
+                <li>Look for <strong>Project ID</strong></li>
+                <li>Copy and paste it above</li>
+            </ol>
         </div>
     </div>
-    
-    <!-- Console Log Panel -->
-    <div class="console-log" id="consoleLog">
-        <div class="console-header">
-            <span>Appwrite Console</span>
-            <button class="console-toggle" id="consoleToggle">×</button>
-        </div>
-        <div id="consoleContent"></div>
-    </div>
-    
-    <footer>
-        <p>© 2023 F_Zone | Friends Zone. All rights reserved.</p>
-        <p style="margin-top: 5px; opacity: 0.7;">Connect. Share. Thrive Together.</p>
-    </footer>
 
+    <!-- Include Appwrite SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@13.0.0"></script>
+    
     <script>
-        // ========================================
-        // CONFIGURATION
-        // ========================================
-        const APPWRITE_ENDPOINT = 'https://cloud.appwrite.io/v1';
-        let APPWRITE_PROJECT_ID = 'jose1235';
-        let APPWRITE_DATABASE_ID = 'F_Zone_DB';
-        let APPWRITE_COLLECTION_ID = 'users';
-        
         // DOM Elements
-        const registrationForm = document.getElementById('registrationForm');
-        const successMessage = document.getElementById('successMessage');
-        const registerBtn = document.getElementById('registerBtn');
-        const btnText = document.getElementById('btnText');
-        const btnSpinner = document.getElementById('btnSpinner');
-        const progressBar = document.getElementById('progressBar');
-        const progress = document.getElementById('progress');
-        const appwriteConfig = document.getElementById('appwriteConfig');
-        const consoleLog = document.getElementById('consoleLog');
-        const consoleContent = document.getElementById('consoleContent');
-        const consoleToggle = document.getElementById('consoleToggle');
+        const testConnectionBtn = document.getElementById('testConnectionBtn');
+        const checkUsersBtn = document.getElementById('checkUsersBtn');
+        const loading = document.getElementById('loading');
+        const resultBox = document.getElementById('resultBox');
         
-        // Initialize Appwrite
-        const appwrite = new Appwrite();
+        // Appwrite Configuration
+        const APPWRITE_ENDPOINT = 'https://cloud.appwrite.io/v1';
+        let appwrite;
         
-        // ========================================
-        // CONSOLE LOGGING
-        // ========================================
-        function logToConsole(message, type = 'info') {
-            const timestamp = new Date().toLocaleTimeString();
-            let color = '#00ff00'; // Green for info
-            
-            if (type === 'error') color = '#ff4757';
-            if (type === 'warning') color = '#ffa502';
-            if (type === 'success') color = '#2ed573';
-            if (type === 'debug') color = '#2e86de';
-            
-            const logEntry = document.createElement('div');
-            logEntry.innerHTML = `<span style="color: #666;">[${timestamp}]</span> <span style="color: ${color};">${message}</span>`;
-            consoleContent.appendChild(logEntry);
-            
-            // Auto-scroll to bottom
-            consoleContent.scrollTop = consoleContent.scrollHeight;
-            
-            // Show console
-            consoleLog.style.display = 'block';
-            
-            // Also log to browser console
-            console.log(`[${type.toUpperCase()}] ${message}`);
-        }
-        
-        consoleToggle.addEventListener('click', () => {
-            consoleLog.style.display = consoleLog.style.display === 'none' ? 'block' : 'none';
+        // Load saved configuration
+        window.addEventListener('load', function() {
+            const savedConfig = localStorage.getItem('fzone_appwrite_config');
+            if (savedConfig) {
+                try {
+                    const config = JSON.parse(savedConfig);
+                    document.getElementById('projectId').value = config.projectId || '';
+                    document.getElementById('databaseId').value = config.databaseId || 'F_Zone_DB';
+                    document.getElementById('collectionId').value = config.collectionId || 'users';
+                    
+                    // Auto-test if project ID exists
+                    if (config.projectId) {
+                        setTimeout(() => {
+                            testConnectionBtn.click();
+                        }, 500);
+                    }
+                } catch (e) {
+                    console.log('No saved configuration found');
+                }
+            }
         });
         
-        // ========================================
-        // APPWRITE SETUP
-        // ========================================
-        function initializeAppwrite() {
-            try {
-                // Load saved configuration
-                const savedConfig = localStorage.getItem('fzone_appwrite_config');
-                if (savedConfig) {
-                    const config = JSON.parse(savedConfig);
-                    APPWRITE_PROJECT_ID = config.projectId || '';
-                    APPWRITE_DATABASE_ID = config.databaseId || 'F_Zone_DB';
-                    APPWRITE_COLLECTION_ID = config.collectionId || 'users';
-                    
-                    document.getElementById('projectId').value = APPWRITE_PROJECT_ID;
-                    document.getElementById('databaseId').value = APPWRITE_DATABASE_ID;
-                    document.getElementById('collectionId').value = APPWRITE_COLLECTION_ID;
-                    
-                    // Auto-hide config if project ID exists
-                    if (APPWRITE_PROJECT_ID) {
-                        appwriteConfig.style.display = 'none';
-                    }
-                }
-                
-                // Set up Appwrite client
-                appwrite.setEndpoint(APPWRITE_ENDPOINT);
-                
-                if (APPWRITE_PROJECT_ID) {
-                    appwrite.setProject(APPWRITE_PROJECT_ID);
-                    logToConsole('Appwrite initialized with saved configuration', 'success');
-                } else {
-                    logToConsole('Please enter your Appwrite credentials', 'warning');
-                    appwriteConfig.style.display = 'block';
-                }
-            } catch (error) {
-                logToConsole('Failed to initialize Appwrite: ' + error.message, 'error');
-                appwriteConfig.style.display = 'block';
-            }
-        }
-        
-        // ========================================
-        // TEST CONNECTION FUNCTION
-        // ========================================
-        document.getElementById('testConnectionBtn').addEventListener('click', async function() {
+        // Test Connection Function
+        testConnectionBtn.addEventListener('click', async function() {
             const projectId = document.getElementById('projectId').value.trim();
             const databaseId = document.getElementById('databaseId').value.trim();
             const collectionId = document.getElementById('collectionId').value.trim();
             
             if (!projectId) {
-                alert('Please enter your Project ID');
+                showResult('error', 'Please enter your Project ID');
                 return;
             }
             
-            const testBtn = this;
-            const originalText = testBtn.innerHTML;
-            testBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Testing...';
-            testBtn.disabled = true;
+            // Show loading
+            loading.style.display = 'block';
+            resultBox.style.display = 'none';
             
             try {
-                logToConsole('Testing connection to Appwrite...', 'debug');
+                // Initialize Appwrite
+                appwrite = new Appwrite();
+                appwrite
+                    .setEndpoint(APPWRITE_ENDPOINT)
+                    .setProject(projectId);
                 
                 // Save configuration
                 const config = {
@@ -860,408 +311,220 @@
                 };
                 localStorage.setItem('fzone_appwrite_config', JSON.stringify(config));
                 
-                // Update global variables
-                APPWRITE_PROJECT_ID = projectId;
-                APPWRITE_DATABASE_ID = databaseId;
-                APPWRITE_COLLECTION_ID = collectionId;
+                // Test connection by listing databases
+                const databases = await appwrite.databases.list();
                 
-                // Re-initialize Appwrite
-                appwrite.setEndpoint(APPWRITE_ENDPOINT);
-                appwrite.setProject(APPWRITE_PROJECT_ID);
+                // Find our database
+                const fzoneDB = databases.databases.find(db => 
+                    db.name === 'F_Zone_DB' || db.$id === databaseId
+                );
                 
-                // Test by trying to list collections (or any simple operation)
-                try {
-                    // Try to list collections to test connection
-                    await appwrite.databases.listCollections(databaseId);
-                    logToConsole('✓ Connection successful! Ready to register users.', 'success');
-                    
-                    // Hide config panel
-                    appwriteConfig.style.display = 'none';
-                    
-                    alert('Connection successful! You can now register users.');
-                } catch (error) {
-                    logToConsole('⚠ Database not found. Creating first user will create it.', 'warning');
-                    
-                    // Still allow registration - database might be created on first use
-                    appwriteConfig.style.display = 'none';
-                    alert('Ready to register. The database will be created with the first user.');
-                }
-                
-            } catch (error) {
-                logToConsole('✗ Connection failed: ' + error.message, 'error');
-                alert('Connection failed. Please check your Project ID and try again.');
-            } finally {
-                testBtn.innerHTML = originalText;
-                testBtn.disabled = false;
-            }
-        });
-        
-        // ========================================
-        // HELPER FUNCTIONS
-        // ========================================
-        async function hashPassword(password) {
-            const encoder = new TextEncoder();
-            const data = encoder.encode(password);
-            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-            const hashArray = Array.from(new Uint8Array(hashBuffer));
-            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-        }
-        
-        function showError(elementId, message) {
-            const errorElement = document.getElementById(elementId);
-            errorElement.textContent = message;
-            errorElement.style.display = 'block';
-            
-            const inputElement = document.getElementById(elementId.replace('Error', ''));
-            inputElement.classList.add('shake');
-            setTimeout(() => inputElement.classList.remove('shake'), 500);
-        }
-        
-        function hideError(elementId) {
-            document.getElementById(elementId).style.display = 'none';
-        }
-        
-        function validateName(name) {
-            if (name.length < 2) {
-                showError('nameError', 'Display name must be at least 2 characters');
-                return false;
-            }
-            hideError('nameError');
-            return true;
-        }
-        
-        function validateEmail(email) {
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(email)) {
-                showError('emailError', 'Please enter a valid email address');
-                return false;
-            }
-            hideError('emailError');
-            return true;
-        }
-        
-        function validatePassword(password) {
-            if (password.length < 6) {
-                showError('passwordError', 'Password must be at least 6 characters');
-                return false;
-            }
-            hideError('passwordError');
-            return true;
-        }
-        
-        function validateConfirmPassword(password, confirmPassword) {
-            if (password !== confirmPassword) {
-                showError('confirmPasswordError', 'Passwords do not match');
-                return false;
-            }
-            hideError('confirmPasswordError');
-            return true;
-        }
-        
-        function checkPasswordStrength(password) {
-            const strengthElement = document.getElementById('passwordStrength');
-            if (password.length === 0) {
-                strengthElement.style.display = 'none';
-                return;
-            }
-            
-            strengthElement.style.display = 'block';
-            
-            let strength = 0;
-            if (password.length >= 8) strength++;
-            if (/[A-Z]/.test(password)) strength++;
-            if (/[0-9]/.test(password)) strength++;
-            if (/[^A-Za-z0-9]/.test(password)) strength++;
-            
-            switch (strength) {
-                case 0:
-                case 1:
-                    strengthElement.textContent = 'Password strength: Weak';
-                    strengthElement.className = 'password-strength strength-weak';
-                    break;
-                case 2:
-                case 3:
-                    strengthElement.textContent = 'Password strength: Medium';
-                    strengthElement.className = 'password-strength strength-medium';
-                    break;
-                case 4:
-                    strengthElement.textContent = 'Password strength: Strong';
-                    strengthElement.className = 'password-strength strength-strong';
-                    break;
-            }
-        }
-        
-        // ========================================
-        // REGISTRATION FUNCTION
-        // ========================================
-        registrationForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            logToConsole('Starting registration process...', 'debug');
-            
-            // Get form values
-            const displayName = document.getElementById('displayName').value.trim();
-            const email = document.getElementById('email').value.trim().toLowerCase();
-            const password = document.getElementById('password').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
-            
-            // Validate inputs
-            const isNameValid = validateName(displayName);
-            const isEmailValid = validateEmail(email);
-            const isPasswordValid = validatePassword(password);
-            const isConfirmPasswordValid = validateConfirmPassword(password, confirmPassword);
-            const isTermsAccepted = document.getElementById('terms').checked;
-            
-            if (!isTermsAccepted) {
-                alert('Please agree to the Terms & Conditions');
-                logToConsole('Registration failed: Terms not accepted', 'error');
-                return;
-            }
-            
-            if (!isNameValid || !isEmailValid || !isPasswordValid || !isConfirmPasswordValid) {
-                logToConsole('Registration failed: Form validation errors', 'error');
-                return;
-            }
-            
-            // Check if Appwrite is configured
-            if (!APPWRITE_PROJECT_ID) {
-                alert('Please configure Appwrite first. Click "Test Connection" above.');
-                appwriteConfig.style.display = 'block';
-                logToConsole('Registration failed: Appwrite not configured', 'error');
-                return;
-            }
-            
-            // Show loading state
-            registerBtn.disabled = true;
-            btnText.textContent = 'Creating Account...';
-            btnSpinner.style.display = 'inline-block';
-            progressBar.style.display = 'block';
-            
-            try {
-                // Progress animation
-                let progressValue = 0;
-                const progressInterval = setInterval(() => {
-                    progressValue += 10;
-                    progress.style.width = `${progressValue}%`;
-                    if (progressValue >= 90) clearInterval(progressInterval);
-                }, 200);
-                
-                logToConsole('Hashing password...', 'debug');
-                const hashedPassword = await hashPassword(password);
-                
-                // Create user data object
-                const userData = {
-                    displayName: displayName,
-                    email: email,
-                    password: hashedPassword,
-                    status: 'offline',
-                    bio: 'New member of F_Zone!',
-                    interests: [],
-                    profilePic: null,
-                    friends: [],
-                    chatRooms: [],
-                    createdAt: new Date().toISOString(),
-                    lastSeen: new Date().toISOString()
-                };
-                
-                logToConsole('Creating user in Appwrite...', 'debug');
-                logToConsole(`Database: ${APPWRITE_DATABASE_ID}, Collection: ${APPWRITE_COLLECTION_ID}`, 'debug');
-                
-                try {
-                    // Create document in Appwrite
-                    const response = await appwrite.databases.createDocument(
-                        APPWRITE_DATABASE_ID,
-                        APPWRITE_COLLECTION_ID,
-                        'unique()', // Auto-generate ID
-                        userData
+                if (fzoneDB) {
+                    showResult('success', 
+                        `✅ Connection Successful!<br>
+                        Project: ${projectId}<br>
+                        Database: ${fzoneDB.name} (${fzoneDB.$id})<br>
+                        Status: Connected and ready`
                     );
                     
-                    logToConsole('✓ User created successfully in Appwrite!', 'success');
-                    logToConsole(`User ID: ${response.$id}`, 'success');
-                    
-                    // Complete progress bar
-                    progress.style.width = '100%';
-                    clearInterval(progressInterval);
-                    
-                    // Show success message
-                    setTimeout(() => {
-                        successMessage.style.display = 'block';
-                        registrationForm.style.display = 'none';
-                        
-                        // Save session locally
-                        localStorage.setItem('fzone_current_user', JSON.stringify({
-                            id: response.$id,
-                            email: email,
-                            displayName: displayName,
-                            loggedIn: true
-                        }));
-                        
-                        // Save user list locally for demo
-                        const existingUsers = JSON.parse(localStorage.getItem('fzone_users') || '[]');
-                        existingUsers.push({
-                            $id: response.$id,
-                            ...userData
-                        });
-                        localStorage.setItem('fzone_users', JSON.stringify(existingUsers));
-                        
-                        logToConsole('✓ Registration complete! Redirecting...', 'success');
-                        
-                        // Redirect after 3 seconds
-                        setTimeout(() => {
-                            window.location.href = 'index.html';
-                        }, 3000);
-                    }, 500);
-                    
-                } catch (dbError) {
-                    logToConsole('✗ Appwrite error: ' + dbError.message, 'error');
-                    
-                    // Try fallback to localStorage if Appwrite fails
-                    logToConsole('Trying fallback to localStorage...', 'warning');
-                    
-                    const userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-                    
-                    // Save to localStorage
-                    const existingUsers = JSON.parse(localStorage.getItem('fzone_users') || '[]');
-                    existingUsers.push({
-                        $id: userId,
-                        ...userData
-                    });
-                    
-                    localStorage.setItem('fzone_users', JSON.stringify(existingUsers));
-                    localStorage.setItem('fzone_current_user', JSON.stringify({
-                        id: userId,
-                        email: email,
-                        displayName: displayName,
-                        loggedIn: true
-                    }));
-                    
-                    logToConsole('✓ User saved to localStorage as fallback', 'warning');
-                    
-                    // Complete progress
-                    progress.style.width = '100%';
-                    clearInterval(progressInterval);
-                    
-                    // Show success message
-                    setTimeout(() => {
-                        successMessage.style.display = 'block';
-                        registrationForm.style.display = 'none';
-                        
-                        setTimeout(() => {
-                            window.location.href = 'index.html';
-                        }, 3000);
-                    }, 500);
+                    // Enable check users button
+                    checkUsersBtn.disabled = false;
+                } else {
+                    showResult('warning', 
+                        `⚠ Connection OK but database not found.<br>
+                        Project: ${projectId} is valid<br>
+                        Database: ${databaseId} not found<br>
+                        You may need to create the database first.`
+                    );
                 }
                 
             } catch (error) {
-                console.error('Registration error:', error);
-                logToConsole('✗ Registration failed: ' + error.message, 'error');
-                
-                // Reset button state
-                registerBtn.disabled = false;
-                btnText.textContent = 'Create Account';
-                btnSpinner.style.display = 'none';
-                progressBar.style.display = 'none';
-                progress.style.width = '0%';
-                
-                // Show error message
-                alert('Registration failed: ' + (error.message || 'Please check your connection and try again'));
+                console.error('Connection error:', error);
+                showResult('error', 
+                    `❌ Connection Failed<br>
+                    Error: ${error.message}<br>
+                    Please check:<br>
+                    1. Project ID is correct<br>
+                    2. You have internet connection<br>
+                    3. Appwrite service is running`
+                );
+            } finally {
+                loading.style.display = 'none';
             }
         });
         
-        // ========================================
-        // FORM VALIDATION EVENTS
-        // ========================================
-        document.getElementById('displayName').addEventListener('input', function() {
-            validateName(this.value);
-        });
-        
-        document.getElementById('email').addEventListener('input', function() {
-            validateEmail(this.value);
-        });
-        
-        document.getElementById('password').addEventListener('input', function() {
-            validatePassword(this.value);
-            checkPasswordStrength(this.value);
-        });
-        
-        document.getElementById('confirmPassword').addEventListener('input', function() {
-            const password = document.getElementById('password').value;
-            validateConfirmPassword(password, this.value);
-        });
-        
-        // ========================================
-        // PASSWORD VISIBILITY TOGGLE
-        // ========================================
-        document.getElementById('togglePassword').addEventListener('click', function() {
-            const passwordInput = document.getElementById('password');
-            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-            passwordInput.setAttribute('type', type);
-            this.innerHTML = type === 'password' ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
-        });
-        
-        document.getElementById('toggleConfirmPassword').addEventListener('click', function() {
-            const confirmInput = document.getElementById('confirmPassword');
-            const type = confirmInput.getAttribute('type') === 'password' ? 'text' : 'password';
-            confirmInput.setAttribute('type', type);
-            this.innerHTML = type === 'password' ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
-        });
-        
-        // ========================================
-        // TERMS LINKS
-        // ========================================
-        document.getElementById('termsLink').addEventListener('click', function(e) {
-            e.preventDefault();
-            alert('F_ZONE TERMS & CONDITIONS\n\n' +
-                  '1. RESPECT ALL MEMBERS\n   Treat everyone with respect and kindness.\n\n' +
-                  '2. NO HARASSMENT\n   Bullying, hate speech, or harassment will not be tolerated.\n\n' +
-                  '3. PRIVACY FIRST\n   Protect your personal information and respect others\' privacy.\n\n' +
-                  '4. SAFE ENVIRONMENT\n   Help us maintain a safe and welcoming community.\n\n' +
-                  '5. REPORT ISSUES\n   Report any suspicious or inappropriate behavior immediately.');
-        });
-        
-        document.getElementById('privacyLink').addEventListener('click', function(e) {
-            e.preventDefault();
-            alert('F_ZONE PRIVACY POLICY\n\n' +
-                  '1. DATA COLLECTION\n   We collect only necessary information for your account.\n\n' +
-                  '2. DATA USAGE\n   Your data is used solely to enhance your experience.\n\n' +
-                  '3. DATA PROTECTION\n   We implement security measures to protect your information.\n\n' +
-                  '4. NO SHARING\n   We do not sell or share your personal data with third parties.\n\n' +
-                  '5. YOUR CONTROL\n   You can delete your account and data at any time.');
-        });
-        
-        // ========================================
-        // LOGIN LINK
-        // ========================================
-        document.getElementById('loginLink').addEventListener('click', function(e) {
-            e.preventDefault();
-            alert('Login page coming soon! For now, please register to create your account.');
-        });
-        
-        // ========================================
-        // INITIALIZATION
-        // ========================================
-        window.addEventListener('load', function() {
-            logToConsole('F_Zone Registration Page Loaded', 'success');
-            logToConsole('Appwrite SDK Version: ' + Appwrite.VERSION, 'debug');
+        // Check Users Function
+        checkUsersBtn.addEventListener('click', async function() {
+            const projectId = document.getElementById('projectId').value.trim();
+            const databaseId = document.getElementById('databaseId').value.trim();
+            const collectionId = document.getElementById('collectionId').value.trim();
             
-            // Check if user is already logged in
-            const currentUser = JSON.parse(localStorage.getItem('fzone_current_user') || 'null');
-            if (currentUser && currentUser.loggedIn) {
-                logToConsole('User already logged in, redirecting...', 'warning');
-                setTimeout(() => {
-                    window.location.href = 'index.html';
-                }, 1000);
+            if (!projectId) {
+                showResult('error', 'Please test connection first');
+                return;
             }
             
-            // Initialize Appwrite
-            initializeAppwrite();
+            // Show loading
+            loading.style.display = 'block';
+            resultBox.style.display = 'none';
             
-            // Add floating animation
-            const header = document.querySelector('header');
-            header.style.animation = 'none';
-            setTimeout(() => {
-                header.style.animation = 'fadeIn 1s ease';
-            }, 100);
+            try {
+                // Initialize Appwrite if not already
+                if (!appwrite) {
+                    appwrite = new Appwrite();
+                    appwrite
+                        .setEndpoint(APPWRITE_ENDPOINT)
+                        .setProject(projectId);
+                }
+                
+                // Try to list documents (users)
+                const documents = await appwrite.databases.listDocuments(
+                    databaseId,
+                    collectionId
+                );
+                
+                if (documents.total > 0) {
+                    let userListHTML = '<div class="user-list">';
+                    
+                    documents.documents.forEach((user, index) => {
+                        userListHTML += `
+                            <div class="user-item">
+                                <div>
+                                    <strong>${index + 1}. ${user.displayName || 'No Name'}</strong><br>
+                                    <small>Email: ${user.email || 'No Email'}</small><br>
+                                    <small>ID: ${user.$id.substring(0, 20)}...</small>
+                                </div>
+                                <div style="color: #28a745;">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    userListHTML += '</div>';
+                    
+                    showResult('success', 
+                        `✅ Found ${documents.total} registered user(s) in your database!<br>
+                        Collection: ${collectionId}<br><br>
+                        ${userListHTML}`
+                    );
+                } else {
+                    showResult('info', 
+                        `📭 No users found in the database.<br>
+                        Collection: ${collectionId} is empty.<br><br>
+                        This means:<br>
+                        1. Your registration might have failed<br>
+                        2. Data was saved to localStorage instead<br>
+                        3. You haven't registered any users yet<br><br>
+                        Try registering a user first, then check again.`
+                    );
+                    
+                    // Check localStorage as fallback
+                    const localUsers = JSON.parse(localStorage.getItem('fzone_users') || '[]');
+                    if (localUsers.length > 0) {
+                        let localListHTML = '<div class="user-list" style="background: #fff3cd; border: 1px solid #ffeaa7;">';
+                        localListHTML += '<h4><i class="fas fa-exclamation-triangle"></i> Users found in localStorage:</h4>';
+                        
+                        localUsers.forEach((user, index) => {
+                            localListHTML += `
+                                <div class="user-item">
+                                    <div>
+                                        <strong>${index + 1}. ${user.displayName || 'No Name'}</strong><br>
+                                        <small>Email: ${user.email || 'No Email'}</small>
+                                    </div>
+                                    <div style="color: #ffc107;">
+                                        <i class="fas fa-laptop-house"></i>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        
+                        localListHTML += '</div>';
+                        
+                        // Append to result
+                        const resultContent = document.querySelector('.result-content');
+                        resultContent.innerHTML += localListHTML;
+                    }
+                }
+                
+            } catch (error) {
+                console.error('Error checking users:', error);
+                
+                if (error.code === 404) {
+                    showResult('warning', 
+                        `📭 Collection not found.<br>
+                        Error: ${error.message}<br><br>
+                        This usually means:<br>
+                        1. The collection "${collectionId}" doesn't exist<br>
+                        2. You need to create it in Appwrite Console<br>
+                        3. Check spelling and case sensitivity`
+                    );
+                } else {
+                    showResult('error', 
+                        `❌ Error checking users:<br>
+                        ${error.message}<br><br>
+                        Common issues:<br>
+                        1. Collection doesn't exist<br>
+                        2. Database doesn't exist<br>
+                        3. Permissions not set`
+                    );
+                }
+                
+                // Check localStorage as fallback
+                const localUsers = JSON.parse(localStorage.getItem('fzone_users') || '[]');
+                if (localUsers.length > 0) {
+                    let localListHTML = '<div class="user-list" style="background: #fff3cd; border: 1px solid #ffeaa7; margin-top: 20px;">';
+                    localListHTML += '<h4><i class="fas fa-exclamation-triangle"></i> Fallback: Users in localStorage:</h4>';
+                    
+                    localUsers.forEach((user, index) => {
+                        localListHTML += `
+                            <div class="user-item">
+                                <div>
+                                    <strong>${index + 1}. ${user.displayName || 'No Name'}</strong><br>
+                                    <small>Email: ${user.email || 'No Email'}</small>
+                                </div>
+                                <div style="color: #ffc107;">
+                                    <i class="fas fa-laptop-house"></i>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    localListHTML += '</div>';
+                    
+                    // Append to result
+                    const resultContent = document.querySelector('.result-content');
+                    resultContent.innerHTML += localListHTML;
+                }
+                
+            } finally {
+                loading.style.display = 'none';
+            }
+        });
+        
+        // Show result function
+        function showResult(type, message) {
+            resultBox.className = `result-box ${type}`;
+            resultBox.innerHTML = `
+                <h3>
+                    ${type === 'success' ? '<i class="fas fa-check-circle"></i>' : ''}
+                    ${type === 'error' ? '<i class="fas fa-times-circle"></i>' : ''}
+                    ${type === 'warning' ? '<i class="fas fa-exclamation-triangle"></i>' : ''}
+                    ${type === 'info' ? '<i class="fas fa-info-circle"></i>' : ''}
+                    ${type.charAt(0).toUpperCase() + type.slice(1)}
+                </h3>
+                <div class="result-content">${message}</div>
+            `;
+            resultBox.style.display = 'block';
+        }
+        
+        // Auto-fill with saved data on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if we have Project ID from previous registration
+            const savedProjectId = localStorage.getItem('fzone_appwrite_project_id');
+            if (savedProjectId) {
+                document.getElementById('projectId').value = savedProjectId;
+            }
         });
     </script>
 </body>
