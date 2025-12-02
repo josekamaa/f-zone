@@ -3,558 +3,535 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test f-zone Appwrite Setup</title>
+    <title>Register - F_Zone | Connect & Share</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        :root {
+            --primary: #6a11cb;
+            --secondary: #2575fc;
+            --accent: #ff9a00;
+            --accent-dark: #ff6a00;
+            --white: #fff;
+            --error: #ff4757;
+            --success: #2ed573;
+            --transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
         
         body {
             background: linear-gradient(135deg, #0f0c29 0%, #302b63 100%);
             min-height: 100vh;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
+            color: var(--white);
             padding: 20px;
         }
         
-        .container {
-            width: 100%;
-            max-width: 700px;
-            background: white;
+        .glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
             border-radius: 20px;
-            overflow: hidden;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
         
         header {
-            background: linear-gradient(45deg, #6a11cb, #2575fc);
-            color: white;
-            padding: 25px;
+            width: 100%;
+            max-width: 1200px;
+            background: linear-gradient(45deg, var(--primary) 0%, var(--secondary) 100%);
+            padding: 2rem 1rem;
+            border-radius: 20px;
+            margin-bottom: 2rem;
             text-align: center;
+        }
+        
+        .header-content {
+            position: relative;
+            z-index: 2;
         }
         
         h1 {
-            font-size: 2.2rem;
-            margin-bottom: 10px;
+            font-size: 2.8rem;
+            margin-bottom: 0.5rem;
+            letter-spacing: 2px;
+            background: linear-gradient(to right, #fff, #e0f7ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-weight: 800;
+            text-transform: uppercase;
         }
         
-        .project-info {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 15px;
-            border-radius: 10px;
-            margin-top: 10px;
-            text-align: left;
-            display: inline-block;
-        }
-        
-        .info-item {
-            margin: 8px 0;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .info-label {
-            font-weight: bold;
-            color: #ffcc00;
-        }
-        
-        .info-value {
-            font-family: monospace;
-            background: rgba(0, 0, 0, 0.2);
-            padding: 5px 10px;
-            border-radius: 5px;
-            font-size: 1.1rem;
-        }
-        
-        .content {
-            padding: 30px;
-        }
-        
-        .section {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            border-left: 4px solid #6a11cb;
-        }
-        
-        .section-title {
-            color: #333;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 1.3rem;
-        }
-        
-        .test-section {
-            background: #e7f6ec;
-            border-left-color: #2ed573;
-        }
-        
-        .btn {
-            padding: 15px 30px;
-            background: linear-gradient(to right, #6a11cb, #2575fc);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 18px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            margin: 10px 5px;
-        }
-        
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(106, 17, 203, 0.4);
-        }
-        
-        .btn:active {
-            transform: translateY(0);
-        }
-        
-        .btn-success {
-            background: linear-gradient(to right, #2ed573, #1dd1a1);
-        }
-        
-        .btn-warning {
-            background: linear-gradient(to right, #ff9a00, #ff6a00);
-        }
-        
-        .loading {
-            text-align: center;
-            padding: 20px;
-            display: none;
-        }
-        
-        .loading i {
-            font-size: 24px;
-            color: #6a11cb;
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .result-box {
-            margin-top: 20px;
-            padding: 20px;
-            border-radius: 10px;
-            display: none;
-        }
-        
-        .success {
-            background: #d4edda;
-            border: 1px solid #c3e6cb;
-            color: #155724;
-        }
-        
-        .error {
-            background: #f8d7da;
-            border: 1px solid #f5c6cb;
-            color: #721c24;
-        }
-        
-        .warning {
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
-            color: #856404;
-        }
-        
-        .info {
-            background: #d1ecf1;
-            border: 1px solid #bee5eb;
-            color: #0c5460;
-        }
-        
-        .code-block {
-            background: #1a1a1a;
-            color: #00ff00;
-            padding: 15px;
-            border-radius: 8px;
-            font-family: monospace;
-            font-size: 14px;
-            margin: 15px 0;
-            overflow-x: auto;
-            white-space: pre-wrap;
-        }
-        
-        .next-steps {
-            background: #fff3cd;
-            padding: 20px;
-            border-radius: 10px;
-            margin-top: 20px;
-            border-left: 4px solid #ffc107;
-        }
-        
-        .steps-list {
-            margin-left: 20px;
-            margin-top: 10px;
-        }
-        
-        .steps-list li {
-            margin-bottom: 10px;
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin: 1rem auto;
+            font-weight: 300;
+            max-width: 600px;
             line-height: 1.5;
         }
         
-        footer {
-            text-align: center;
-            padding: 20px;
-            color: #666;
-            font-size: 0.9rem;
+        .register-container {
+            width: 100%;
+            max-width: 500px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 25px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
         }
         
-        .console-box {
-            background: #1a1a1a;
-            color: #00ff00;
-            padding: 15px;
-            border-radius: 8px;
-            font-family: monospace;
-            font-size: 13px;
-            margin-top: 20px;
-            max-height: 200px;
-            overflow-y: auto;
+        .register-form {
+            padding: 2.5rem;
+        }
+        
+        .success-message {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+            background: rgba(46, 213, 115, 0.1);
+            border-radius: 15px;
+            border: 1px solid rgba(46, 213, 115, 0.3);
+            margin-bottom: 1.5rem;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .success-message i {
+            font-size: 3.5rem;
+            color: var(--success);
+            margin-bottom: 1rem;
+            display: block;
+        }
+        
+        .success-message h3 {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+            color: var(--success);
+        }
+        
+        .success-message p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.1rem;
+        }
+        
+        .form-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .form-header h2 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(to right, var(--accent), var(--white));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 500;
+        }
+        
+        .input-with-icon {
+            position: relative;
+        }
+        
+        .input-with-icon i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 15px 15px 15px 45px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            color: var(--white);
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(255, 154, 0, 0.1);
+        }
+        
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.6);
+            cursor: pointer;
+        }
+        
+        .form-group.checkbox {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        
+        .form-group.checkbox input {
+            margin-top: 5px;
+            accent-color: var(--accent);
+        }
+        
+        .error-message {
+            color: var(--error);
+            font-size: 0.85rem;
+            margin-top: 5px;
             display: none;
         }
         
-        .console-header {
+        .register-btn {
+            width: 100%;
+            background: linear-gradient(to right, var(--accent), var(--accent-dark));
+            color: var(--white);
+            font-size: 1.2rem;
+            font-weight: 600;
+            padding: 16px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-top: 1rem;
+        }
+        
+        .register-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(255, 106, 0, 0.4);
+        }
+        
+        .register-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        
+        .login-link {
+            text-align: center;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .login-link a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .status-indicator {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .status-online {
+            background: rgba(46, 213, 115, 0.1);
+            border: 1px solid rgba(46, 213, 115, 0.3);
+            color: #2ed573;
+        }
+        
+        .status-warning {
+            background: rgba(255, 154, 0, 0.1);
+            border: 1px solid rgba(255, 154, 0, 0.3);
             color: #ff9a00;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        }
+        
+        .status-error {
+            background: rgba(255, 71, 87, 0.1);
+            border: 1px solid rgba(255, 71, 87, 0.3);
+            color: #ff4757;
+        }
+        
+        .continue-btn {
+            display: none;
+            width: 100%;
+            background: linear-gradient(to right, #2ed573, #1dd1a1);
+            color: white;
+            padding: 15px;
+            border-radius: 12px;
+            border: none;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: var(--transition);
+        }
+        
+        .continue-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(46, 213, 115, 0.4);
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        footer {
+            width: 100%;
+            text-align: center;
+            padding: 2rem;
+            margin-top: 2rem;
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .register-form {
+                padding: 1.5rem;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1><i class="fas fa-check-circle"></i> f-zone Appwrite Setup</h1>
-            <div class="project-info">
-                <div class="info-item">
-                    <span class="info-label">Project Name:</span>
-                    <span class="info-value">f-zone</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Project ID:</span>
-                    <span class="info-value" id="projectIdValue">jose1235</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">API Endpoint:</span>
-                    <span class="info-value">https://sgp.cloud.appwrite.io/v1</span>
-                </div>
-            </div>
-        </header>
-        
-        <div class="content">
-            <div class="section">
-                <h2 class="section-title"><i class="fas fa-info-circle"></i> Your Configuration</h2>
-                <p>You're all set! Here's what you need for your registration page:</p>
-                
-                <div class="code-block">
-// Copy this configuration to your registration page:
-const APPWRITE_ENDPOINT = 'https://sgp.cloud.appwrite.io/v1';
-const APPWRITE_PROJECT_ID = 'jose1235';
-const APPWRITE_DATABASE_ID = 'F_Zone_DB';  // Create this in Appwrite
-const APPWRITE_COLLECTION_ID = 'users';    // Create this in Appwrite
-                </div>
-                
-                <p><strong>Note:</strong> You still need to create the database and collection in Appwrite Console.</p>
+    <header class="glass">
+        <div class="header-content">
+            <h1>F_Zone</h1>
+            <p class="subtitle">Join our community of friends and start connecting today!</p>
+        </div>
+    </header>
+    
+    <div class="register-container glass">
+        <div class="register-form">
+            <div class="success-message" id="successMessage">
+                <i class="fas fa-check-circle"></i>
+                <h3>Registration Successful!</h3>
+                <p id="saveLocation">Saving user data...</p>
+                <button class="continue-btn" id="continueBtn">
+                    <i class="fas fa-arrow-right"></i> Continue to Dashboard
+                </button>
             </div>
             
-            <div class="section test-section">
-                <h2 class="section-title"><i class="fas fa-plug"></i> Test Your Setup</h2>
-                <p>Let's verify your Appwrite connection is working:</p>
-                
-                <button class="btn" id="testConnectionBtn">
-                    <i class="fas fa-bolt"></i> Test Connection
-                </button>
-                
-                <button class="btn btn-success" id="createTestUserBtn">
-                    <i class="fas fa-user-plus"></i> Create Test User
-                </button>
-                
-                <button class="btn btn-warning" id="checkLocalBtn">
-                    <i class="fas fa-laptop-house"></i> Check LocalStorage
-                </button>
-                
-                <div class="loading" id="loading">
-                    <i class="fas fa-spinner fa-spin"></i>
-                    <p id="loadingText">Testing connection...</p>
-                </div>
-                
-                <div class="result-box" id="resultBox"></div>
-                
-                <div class="console-box" id="consoleBox">
-                    <div class="console-header">
-                        <span>Debug Console</span>
-                        <button onclick="document.getElementById('consoleBox').style.display='none'" style="background:none;border:none;color:#ff9a00;cursor:pointer;">×</button>
+            <div class="form-header">
+                <h2>Create Account</h2>
+                <p>Join the F_Zone community</p>
+            </div>
+            
+            <!-- Status Indicator -->
+            <div class="status-indicator status-warning" id="statusIndicator">
+                <i class="fas fa-circle-notch fa-spin"></i>
+                Loading Appwrite SDK...
+            </div>
+            
+            <form id="registrationForm">
+                <div class="form-group">
+                    <label for="displayName">Display Name</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-user"></i>
+                        <input type="text" id="displayName" class="form-control" placeholder="Enter your display name" required>
                     </div>
-                    <div id="consoleOutput"></div>
+                    <div class="error-message" id="nameError">Display name must be at least 2 characters</div>
                 </div>
-            </div>
+                
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-envelope"></i>
+                        <input type="email" id="email" class="form-control" placeholder="Enter your email" required>
+                    </div>
+                    <div class="error-message" id="emailError">Please enter a valid email address</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="password" class="form-control" placeholder="Create a password" required>
+                        <button type="button" class="password-toggle" id="togglePassword">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                    <div class="error-message" id="passwordError">Password must be at least 6 characters</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="confirmPassword">Confirm Password</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="confirmPassword" class="form-control" placeholder="Confirm your password" required>
+                        <button type="button" class="password-toggle" id="toggleConfirmPassword">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                    <div class="error-message" id="confirmPasswordError">Passwords do not match</div>
+                </div>
+                
+                <div class="form-group checkbox">
+                    <input type="checkbox" id="terms" required>
+                    <label for="terms">
+                        I agree to the Terms & Conditions and Privacy Policy
+                    </label>
+                </div>
+                
+                <button type="submit" class="register-btn" id="registerBtn">
+                    <span id="btnText">Create Account</span>
+                    <i class="fas fa-spinner fa-spin" id="btnSpinner" style="display: none;"></i>
+                </button>
+            </form>
             
-            <div class="next-steps">
-                <h2 class="section-title" style="color: #856404;"><i class="fas fa-forward"></i> Next Steps</h2>
-                <ol class="steps-list">
-                    <li><strong>Create Database in Appwrite:</strong> Go to Database → Create Database → Name: <code>F_Zone_DB</code></li>
-                    <li><strong>Create Collection:</strong> Inside F_Zone_DB, create collection named <code>users</code></li>
-                    <li><strong>Add Attributes:</strong> Add these columns to users collection:
-                        <ul style="margin-left: 20px; margin-top: 5px;">
-                            <li><code>displayName</code> (string, required)</li>
-                            <li><code>email</code> (string, required)</li>
-                            <li><code>password</code> (string, required)</li>
-                            <li><code>status</code> (string, default: "offline")</li>
-                        </ul>
-                    </li>
-                    <li><strong>Update Registration Page:</strong> Use the configuration above</li>
-                    <li><strong>Test Registration:</strong> Create your first user!</li>
-                </ol>
+            <div class="login-link">
+                Already have an account? <a href="#" onclick="alert('Login page coming soon!'); return false;">Login here</a>
             </div>
         </div>
-        
-        <footer>
-            <p>f-zone Appwrite Setup Helper | Project ID: <strong>jose1235</strong></p>
-        </footer>
     </div>
+    
+    <footer>
+        <p>© 2023 F_Zone | Friends Zone. All rights reserved.</p>
+        <p style="margin-top: 5px; opacity: 0.7;">Connect. Share. Thrive Together.</p>
+    </footer>
 
-    <script>
-        // Your Appwrite Configuration
-        const APPWRITE_ENDPOINT = 'https://sgp.cloud.appwrite.io/v1';
-        const APPWRITE_PROJECT_ID = 'jose1235';
-        
-        // DOM Elements
-        const testConnectionBtn = document.getElementById('testConnectionBtn');
-        const createTestUserBtn = document.getElementById('createTestUserBtn');
-        const checkLocalBtn = document.getElementById('checkLocalBtn');
-        const loading = document.getElementById('loading');
-        const loadingText = document.getElementById('loadingText');
-        const resultBox = document.getElementById('resultBox');
-        const consoleBox = document.getElementById('consoleBox');
-        const consoleOutput = document.getElementById('consoleOutput');
-        
-        // Console logging
-        function logToConsole(message, type = 'info') {
-            const timestamp = new Date().toLocaleTimeString();
-            let color = '#00ff00';
-            let icon = '>';
-            
-            switch(type) {
-                case 'error': color = '#ff4757'; icon = '✗'; break;
-                case 'warning': color = '#ffa502'; icon = '⚠'; break;
-                case 'success': color = '#2ed573'; icon = '✓'; break;
-                case 'debug': color = '#2e86de'; icon = '⚡'; break;
-            }
-            
-            const logEntry = document.createElement('div');
-            logEntry.innerHTML = `<span style="color: #666;">[${timestamp}]</span> <span style="color: ${color};">${icon} ${message}</span>`;
-            consoleOutput.appendChild(logEntry);
-            
-            consoleOutput.scrollTop = consoleOutput.scrollHeight;
-            consoleBox.style.display = 'block';
-            
-            console.log(`[${type}] ${message}`);
+   <script type="module">
+import { Client, Account, Databases, ID } from "https://esm.run/appwrite@13.0.0";
+
+/* ================================
+   APPWRITE CONFIGURATION
+================================= */
+const APPWRITE = {
+    endpoint: "https://sgp.cloud.appwrite.io/v1",
+    projectId: "jose1235",
+    databaseId: "F_Zone_DB",
+    collectionId: "users"
+};
+
+/* ================================
+   INITIALIZE CLIENT
+================================= */
+const client = new Client()
+    .setEndpoint(APPWRITE.endpoint)
+    .setProject(APPWRITE.projectId);
+
+const account = new Account(client);
+const databases = new Databases(client);
+
+/* ================================
+   DOM ELEMENTS
+================================= */
+const registrationForm = document.getElementById("registrationForm");
+const successMessage = document.getElementById("successMessage");
+const saveLocation = document.getElementById("saveLocation");
+const continueBtn = document.getElementById("continueBtn");
+const registerBtn = document.getElementById("registerBtn");
+const btnText = document.getElementById("btnText");
+const btnSpinner = document.getElementById("btnSpinner");
+const statusIndicator = document.getElementById("statusIndicator");
+
+/* ================================
+   SERVER STATUS CHECK
+================================= */
+async function checkServer() {
+    try {
+        await account.get();
+    } catch {
+        // Server is reachable even if account is not logged in
+    }
+    statusIndicator.className = "status-indicator status-online";
+    statusIndicator.innerHTML = "✅ Appwrite SDK Loaded Successfully!";
+}
+checkServer();
+
+/* ================================
+   REGISTER USER FUNCTION
+================================= */
+async function registerUser(displayName, email, password) {
+    // 1. Create authentication user
+    const newUser = await account.create(ID.unique(), email, password);
+
+    // 2. Store user profile in the database
+    await databases.createDocument(
+        APPWRITE.databaseId,
+        APPWRITE.collectionId,
+        newUser.$id,
+        {
+            displayName: displayName,
+            email: email,
+            createdAt: new Date().toISOString()
         }
-        
-        // Show result
-        function showResult(type, message) {
-            resultBox.className = `result-box ${type}`;
-            resultBox.innerHTML = message;
-            resultBox.style.display = 'block';
-        }
-        
-        // Test Connection
-        testConnectionBtn.addEventListener('click', async function() {
-            loading.style.display = 'block';
-            loadingText.textContent = 'Testing Appwrite connection...';
-            resultBox.style.display = 'none';
-            
-            logToConsole(`Testing connection to ${APPWRITE_ENDPOINT}`, 'debug');
-            logToConsole(`Using Project ID: ${APPWRITE_PROJECT_ID}`, 'debug');
-            
-            try {
-                // Test 1: Basic connection
-                const response = await fetch(APPWRITE_ENDPOINT, {
-                    method: 'GET',
-                    headers: {
-                        'X-Appwrite-Project': APPWRITE_PROJECT_ID,
-                        'Content-Type': 'application/json'
-                    }
-                });
-                
-                logToConsole(`HTTP Status: ${response.status}`, response.ok ? 'success' : 'warning');
-                
-                if (response.ok) {
-                    // Test 2: Get project info
-                    const projectResponse = await fetch(`${APPWRITE_ENDPOINT}/projects/${APPWRITE_PROJECT_ID}`, {
-                        method: 'GET',
-                        headers: {
-                            'X-Appwrite-Project': APPWRITE_PROJECT_ID,
-                            'Content-Type': 'application/json'
-                        }
-                    });
-                    
-                    if (projectResponse.ok) {
-                        const projectData = await projectResponse.json();
-                        logToConsole(`Project found: ${projectData.name}`, 'success');
-                        
-                        showResult('success', 
-                            `<strong>✅ Connection Successful!</strong><br><br>
-                            <strong>Project:</strong> ${projectData.name}<br>
-                            <strong>Region:</strong> Singapore<br>
-                            <strong>Status:</strong> Active<br><br>
-                            <i class="fas fa-check-circle"></i> Your Appwrite setup is working perfectly!<br><br>
-                            <small>Now you need to create the database and collection.</small>`
-                        );
-                        
-                        createTestUserBtn.disabled = false;
-                        
-                    } else {
-                        logToConsole(`Project API returned: ${projectResponse.status}`, 'warning');
-                        showResult('warning', 
-                            `<strong>⚠ Basic Connection OK</strong><br><br>
-                            Appwrite is reachable but project details are limited.<br>
-                            This might be normal without API keys.<br><br>
-                            <i class="fas fa-exclamation-triangle"></i> Try creating the database first.`
-                        );
-                    }
-                } else {
-                    logToConsole(`Connection failed: HTTP ${response.status}`, 'error');
-                    showResult('error', 
-                        `<strong>❌ Connection Failed</strong><br><br>
-                        HTTP Status: ${response.status}<br><br>
-                        <strong>Possible issues:</strong><br>
-                        1. Project ID is incorrect<br>
-                        2. Project doesn't exist<br>
-                        3. Network issues<br><br>
-                        <i class="fas fa-times-circle"></i> Please verify your Project ID.`
-                    );
-                }
-                
-            } catch (error) {
-                logToConsole(`Network error: ${error.message}`, 'error');
-                showResult('error', 
-                    `<strong>❌ Network Error</strong><br><br>
-                    <strong>Error:</strong> ${error.message}<br><br>
-                    <i class="fas fa-times-circle"></i> Check your internet connection.`
-                );
-            } finally {
-                loading.style.display = 'none';
-            }
-        });
-        
-        // Create Test User (simulated)
-        createTestUserBtn.addEventListener('click', async function() {
-            loading.style.display = 'block';
-            loadingText.textContent = 'Creating test user...';
-            
-            logToConsole('Simulating user creation...', 'debug');
-            
-            try {
-                // Simulate API call
-                await new Promise(resolve => setTimeout(resolve, 1500));
-                
-                // Create test user data
-                const testUser = {
-                    displayName: 'Test User',
-                    email: 'test@fzone.com',
-                    password: 'hashed_password_here',
-                    status: 'offline',
-                    createdAt: new Date().toISOString()
-                };
-                
-                logToConsole('Test user data created', 'success');
-                logToConsole(`Display Name: ${testUser.displayName}`, 'info');
-                logToConsole(`Email: ${testUser.email}`, 'info');
-                
-                // Save to localStorage as example
-                const existingUsers = JSON.parse(localStorage.getItem('fzone_test_users') || '[]');
-                existingUsers.push({
-                    $id: 'test_' + Date.now(),
-                    ...testUser
-                });
-                localStorage.setItem('fzone_test_users', JSON.stringify(existingUsers));
-                
-                showResult('success', 
-                    `<strong>✅ Test User Created (Simulated)</strong><br><br>
-                    <strong>Name:</strong> ${testUser.displayName}<br>
-                    <strong>Email:</strong> ${testUser.email}<br>
-                    <strong>Status:</strong> ${testUser.status}<br><br>
-                    <i class="fas fa-check-circle"></i> This simulates what will happen in your registration page.<br>
-                    <i class="fas fa-info-circle"></i> Saved to localStorage for demonstration.`
-                );
-                
-            } catch (error) {
-                logToConsole(`Error: ${error.message}`, 'error');
-                showResult('error', `Error creating test user: ${error.message}`);
-            } finally {
-                loading.style.display = 'none';
-            }
-        });
-        
-        // Check LocalStorage
-        checkLocalBtn.addEventListener('click', function() {
-            const testUsers = JSON.parse(localStorage.getItem('fzone_test_users') || '[]');
-            const registeredUsers = JSON.parse(localStorage.getItem('fzone_users') || '[]');
-            
-            logToConsole(`Found ${testUsers.length} test user(s) in localStorage`, 'info');
-            logToConsole(`Found ${registeredUsers.length} registered user(s) in localStorage`, 'info');
-            
-            if (testUsers.length > 0 || registeredUsers.length > 0) {
-                let userList = '';
-                
-                if (testUsers.length > 0) {
-                    userList += '<h4>Test Users (from this page):</h4>';
-                    testUsers.forEach((user, index) => {
-                        userList += `<div style="padding: 10px; margin: 5px 0; background: #e7f6ec; border-radius: 5px;">
-                            <strong>${index + 1}. ${user.displayName}</strong><br>
-                            <small>Email: ${user.email}</small>
-                        </div>`;
-                    });
-                }
-                
-                if (registeredUsers.length > 0) {
-                    userList += '<h4 style="margin-top: 15px;">Registered Users (from registration page):</h4>';
-                    registeredUsers.forEach((user, index) => {
-                        userList += `<div style="padding: 10px; margin: 5px 0; background: #e7f3ff; border-radius: 5px;">
-                            <strong>${index + 1}. ${user.displayName || 'Unnamed'}</strong><br>
-                            <small>Email: ${user.email || 'No email'}</small>
-                        </div>`;
-                    });
-                }
-                
-                showResult('info', 
-                    `<strong>📦 LocalStorage Contents</strong><br><br>
-                    ${userList}<br>
-                    <i class="fas fa-info-circle"></i> These users are stored locally in your browser.`
-                );
-            } else {
-                showResult('info', 
-                    `<strong>📦 LocalStorage Empty</strong><br><br>
-                    No users found in localStorage.<br>
-                    <i class="fas fa-info-circle"></i> This is normal if you haven't created any test users yet.`
-                );
-            }
-        });
-        
-        // Initialize
-        window.addEventListener('load', function() {
-            logToConsole('f-zone Appwrite Test Page Loaded', 'success');
-            logToConsole(`Project ID: ${APPWRITE_PROJECT_ID}`, 'info');
-            logToConsole(`Endpoint: ${APPWRITE_ENDPOINT}`, 'info');
-        });
-    </script>
+    );
+
+    return newUser;
+}
+
+/* ================================
+   HANDLE FORM SUBMISSION
+================================= */
+registrationForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const displayName = document.getElementById("displayName").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+    const confirmPwd = document.getElementById("confirmPassword").value;
+
+    if (password !== confirmPwd) {
+        alert("Passwords do not match!");
+        return;
+    }
+
+    registerBtn.disabled = true;
+    btnText.style.display = "none";
+    btnSpinner.style.display = "inline-block";
+
+    try {
+        await registerUser(displayName, email, password);
+
+        registrationForm.style.display = "none";
+        successMessage.style.display = "block";
+        continueBtn.style.display = "block";
+        saveLocation.innerText = "✅ User saved into Appwrite successfully!";
+
+        statusIndicator.className = "status-indicator status-online";
+        statusIndicator.innerHTML = "🎉 Registration Successful!";
+    } catch (err) {
+        alert("Registration Failed: " + err.message);
+
+        statusIndicator.className = "status-indicator status-error";
+        statusIndicator.innerHTML = "❌ Registration Failed";
+    }
+
+    registerBtn.disabled = false;
+    btnText.style.display = "inline";
+    btnSpinner.style.display = "none";
+});
+
+continueBtn.addEventListener("click", () => {
+    window.location.href = "dashboard.html";
+});
+</script>
+
+   
 </body>
 </html>
