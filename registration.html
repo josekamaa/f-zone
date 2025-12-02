@@ -24,7 +24,7 @@
         
         .test-container {
             width: 100%;
-            max-width: 600px;
+            max-width: 700px;
             background: white;
             border-radius: 15px;
             padding: 30px;
@@ -80,6 +80,10 @@
             cursor: pointer;
             transition: transform 0.3s;
             margin: 10px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
         
         .btn:hover {
@@ -92,6 +96,10 @@
         
         .btn-secondary {
             background: linear-gradient(to right, #ff9a00, #ff6a00);
+        }
+        
+        .btn-success {
+            background: linear-gradient(to right, #2ed573, #1dd1a1);
         }
         
         .result-box {
@@ -119,36 +127,21 @@
             color: #0c5460;
         }
         
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+        
         .result-box h3 {
-            margin-bottom: 10px;
+            margin-bottom: 15px;
             display: flex;
             align-items: center;
             gap: 10px;
         }
         
-        .result-box p {
-            margin-bottom: 5px;
-            line-height: 1.5;
-        }
-        
-        .user-list {
-            margin-top: 15px;
-            padding: 15px;
-            background: rgba(0, 0, 0, 0.05);
-            border-radius: 5px;
-            max-height: 300px;
-            overflow-y: auto;
-        }
-        
-        .user-item {
-            padding: 10px;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-            display: flex;
-            justify-content: space-between;
-        }
-        
-        .user-item:last-child {
-            border-bottom: none;
+        .result-content {
+            line-height: 1.6;
         }
         
         .loading {
@@ -178,6 +171,8 @@
         .steps h3 {
             color: #333;
             margin-bottom: 15px;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 10px;
         }
         
         .steps ol {
@@ -195,72 +190,234 @@
             padding: 2px 6px;
             border-radius: 4px;
             font-family: monospace;
+            color: #d63384;
+        }
+        
+        .step-number {
+            display: inline-block;
+            width: 25px;
+            height: 25px;
+            background: #6a11cb;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 25px;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        
+        .console-box {
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 14px;
+            margin-top: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+        }
+        
+        .console-header {
+            color: #ff9a00;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .api-key-section {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .api-key-section h4 {
+            color: #2575fc;
+            margin-bottom: 10px;
+        }
+        
+        .toggle-btn {
+            background: none;
+            border: none;
+            color: #2575fc;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: underline;
+        }
+        
+        .toggle-btn:hover {
+            color: #6a11cb;
         }
     </style>
 </head>
 <body>
     <div class="test-container">
-        <h1><i class="fas fa-plug"></i> Test Appwrite Connection</h1>
-        <p class="subtitle">Check if your F_Zone database is connected and working</p>
+        <h1><i class="fas fa-plug"></i> F_Zone Appwrite Connection Test</h1>
+        <p class="subtitle">Diagnose your Appwrite setup and check user registration</p>
         
-        <div class="form-group">
-            <label for="projectId">Project ID</label>
-            <input type="text" id="projectId" placeholder="Enter your Appwrite Project ID">
+        <div class="api-key-section" id="apiKeySection">
+            <h4><i class="fas fa-key"></i> API Key (Optional for testing)</h4>
+            <div class="form-group">
+                <label for="apiKey">API Key</label>
+                <input type="password" id="apiKey" placeholder="Enter API Key if you have one">
+            </div>
+            <small>Only needed if you created an API key in Appwrite Console</small>
         </div>
         
         <div class="form-group">
-            <label for="databaseId">Database ID</label>
+            <label for="projectId"><i class="fas fa-id-card"></i> Project ID *</label>
+            <input type="text" id="projectId" placeholder="Enter your Appwrite Project ID" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="databaseId"><i class="fas fa-database"></i> Database ID</label>
             <input type="text" id="databaseId" value="F_Zone_DB" placeholder="Enter Database ID">
         </div>
         
         <div class="form-group">
-            <label for="collectionId">Collection ID</label>
+            <label for="collectionId"><i class="fas fa-table"></i> Collection ID</label>
             <input type="text" id="collectionId" value="users" placeholder="Enter Collection ID">
         </div>
         
         <button class="btn" id="testConnectionBtn">
-            <i class="fas fa-plug"></i> Test Connection
+            <i class="fas fa-plug"></i> Test Appwrite Connection
         </button>
         
-        <button class="btn btn-secondary" id="checkUsersBtn">
+        <button class="btn btn-secondary" id="checkUsersBtn" disabled>
             <i class="fas fa-users"></i> Check Registered Users
+        </button>
+        
+        <button class="btn btn-success" id="checkLocalStorageBtn">
+            <i class="fas fa-laptop-house"></i> Check LocalStorage Users
+        </button>
+        
+        <button class="toggle-btn" id="toggleApiKeyBtn">
+            <i class="fas fa-key"></i> I have an API Key
         </button>
         
         <div class="loading" id="loading">
             <i class="fas fa-spinner fa-spin"></i>
-            <p>Testing connection...</p>
+            <p id="loadingText">Testing connection...</p>
         </div>
         
         <div class="result-box" id="resultBox"></div>
         
+        <div class="console-box" id="consoleBox">
+            <div class="console-header">
+                <span>Debug Console</span>
+                <button class="toggle-btn" id="clearConsoleBtn">Clear</button>
+            </div>
+            <div id="consoleOutput"></div>
+        </div>
+        
         <div class="steps">
-            <h3><i class="fas fa-info-circle"></i> How to get your Project ID:</h3>
+            <h3><i class="fas fa-question-circle"></i> How to Find Your Project ID</h3>
             <ol>
-                <li>Go to <a href="https://cloud.appwrite.io/" target="_blank">Appwrite Console</a></li>
-                <li>Click on your <strong>F_Zone</strong> project</li>
-                <li>Go to <strong>Settings</strong> or <strong>Overview</strong></li>
-                <li>Look for <strong>Project ID</strong></li>
-                <li>Copy and paste it above</li>
+                <li>
+                    <span class="step-number">1</span>
+                    Go to <a href="https://cloud.appwrite.io/" target="_blank" style="color: #6a11cb; font-weight: bold;">Appwrite Console</a>
+                </li>
+                <li>
+                    <span class="step-number">2</span>
+                    Click on your <strong>F_Zone</strong> project
+                </li>
+                <li>
+                    <span class="step-number">3</span>
+                    Look in the <strong>Settings</strong> or <strong>Overview</strong> section
+                </li>
+                <li>
+                    <span class="step-number">4</span>
+                    Find and copy the <strong>Project ID</strong> (starts with numbers/letters)
+                </li>
+                <li>
+                    <span class="step-number">5</span>
+                    Paste it in the form above
+                </li>
             </ol>
+            
+            <div style="margin-top: 20px; padding: 15px; background: #fff3cd; border-radius: 5px;">
+                <h4><i class="fas fa-exclamation-triangle"></i> Common Issues</h4>
+                <ul style="margin-left: 20px;">
+                    <li>Make sure you're logged into Appwrite</li>
+                    <li>Check that your project exists</li>
+                    <li>Verify internet connection</li>
+                    <li>Try a different browser if issues persist</li>
+                </ul>
+            </div>
         </div>
     </div>
 
-    <!-- Include Appwrite SDK -->
-    <script src="https://cdn.jsdelivr.net/npm/appwrite@13.0.0"></script>
+    <!-- Appwrite SDK - Using correct version -->
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@10.0.0"></script>
     
     <script>
         // DOM Elements
         const testConnectionBtn = document.getElementById('testConnectionBtn');
         const checkUsersBtn = document.getElementById('checkUsersBtn');
+        const checkLocalStorageBtn = document.getElementById('checkLocalStorageBtn');
         const loading = document.getElementById('loading');
+        const loadingText = document.getElementById('loadingText');
         const resultBox = document.getElementById('resultBox');
+        const consoleBox = document.getElementById('consoleBox');
+        const consoleOutput = document.getElementById('consoleOutput');
+        const toggleApiKeyBtn = document.getElementById('toggleApiKeyBtn');
+        const apiKeySection = document.getElementById('apiKeySection');
+        const clearConsoleBtn = document.getElementById('clearConsoleBtn');
         
-        // Appwrite Configuration
+        // Configuration
         const APPWRITE_ENDPOINT = 'https://cloud.appwrite.io/v1';
-        let appwrite;
         
-        // Load saved configuration
+        // Console logging
+        function logToConsole(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            let color = '#00ff00'; // Green for info
+            let icon = '>';
+            
+            if (type === 'error') {
+                color = '#ff4757';
+                icon = '✗';
+            } else if (type === 'warning') {
+                color = '#ffa502';
+                icon = '⚠';
+            } else if (type === 'success') {
+                color = '#2ed573';
+                icon = '✓';
+            } else if (type === 'debug') {
+                color = '#2e86de';
+                icon = '⚡';
+            }
+            
+            const logEntry = document.createElement('div');
+            logEntry.innerHTML = `<span style="color: #666;">[${timestamp}]</span> <span style="color: ${color};"><strong>${icon}</strong> ${message}</span>`;
+            consoleOutput.appendChild(logEntry);
+            
+            // Auto-scroll
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+            consoleBox.style.display = 'block';
+            
+            // Also log to browser console
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+        
+        // Clear console
+        clearConsoleBtn.addEventListener('click', () => {
+            consoleOutput.innerHTML = '';
+            consoleBox.style.display = 'none';
+        });
+        
+        // Toggle API key section
+        toggleApiKeyBtn.addEventListener('click', () => {
+            apiKeySection.style.display = apiKeySection.style.display === 'block' ? 'none' : 'block';
+        });
+        
+        // Load saved data
         window.addEventListener('load', function() {
+            logToConsole('F_Zone Connection Test Loaded', 'debug');
+            
             const savedConfig = localStorage.getItem('fzone_appwrite_config');
             if (savedConfig) {
                 try {
@@ -269,23 +426,22 @@
                     document.getElementById('databaseId').value = config.databaseId || 'F_Zone_DB';
                     document.getElementById('collectionId').value = config.collectionId || 'users';
                     
-                    // Auto-test if project ID exists
-                    if (config.projectId) {
-                        setTimeout(() => {
-                            testConnectionBtn.click();
-                        }, 500);
-                    }
+                    logToConsole('Loaded saved configuration', 'success');
                 } catch (e) {
-                    console.log('No saved configuration found');
+                    logToConsole('No saved configuration found', 'warning');
                 }
             }
+            
+            // Check localStorage for users immediately
+            checkLocalStorage();
         });
         
-        // Test Connection Function
+        // Test Connection
         testConnectionBtn.addEventListener('click', async function() {
             const projectId = document.getElementById('projectId').value.trim();
             const databaseId = document.getElementById('databaseId').value.trim();
             const collectionId = document.getElementById('collectionId').value.trim();
+            const apiKey = document.getElementById('apiKey').value.trim();
             
             if (!projectId) {
                 showResult('error', 'Please enter your Project ID');
@@ -294,238 +450,265 @@
             
             // Show loading
             loading.style.display = 'block';
+            loadingText.textContent = 'Testing Appwrite connection...';
             resultBox.style.display = 'none';
             
             try {
-                // Initialize Appwrite
-                appwrite = new Appwrite();
+                logToConsole(`Testing connection to Appwrite...`, 'debug');
+                logToConsole(`Endpoint: ${APPWRITE_ENDPOINT}`, 'debug');
+                logToConsole(`Project ID: ${projectId}`, 'debug');
+                
+                // Initialize Appwrite CORRECTLY
+                const appwrite = new Appwrite();
+                
+                // Set endpoint and project
                 appwrite
                     .setEndpoint(APPWRITE_ENDPOINT)
                     .setProject(projectId);
+                
+                // If API key provided, set it
+                if (apiKey) {
+                    appwrite.setKey(apiKey);
+                    logToConsole('API key set for authentication', 'debug');
+                }
                 
                 // Save configuration
                 const config = {
                     projectId: projectId,
                     databaseId: databaseId,
-                    collectionId: collectionId
+                    collectionId: collectionId,
+                    apiKey: apiKey
                 };
                 localStorage.setItem('fzone_appwrite_config', JSON.stringify(config));
                 
-                // Test connection by listing databases
-                const databases = await appwrite.databases.list();
+                // Test 1: Check if we can access the project
+                logToConsole('Attempting to list databases...', 'debug');
                 
-                // Find our database
-                const fzoneDB = databases.databases.find(db => 
-                    db.name === 'F_Zone_DB' || db.$id === databaseId
-                );
-                
-                if (fzoneDB) {
-                    showResult('success', 
-                        `✅ Connection Successful!<br>
-                        Project: ${projectId}<br>
-                        Database: ${fzoneDB.name} (${fzoneDB.$id})<br>
-                        Status: Connected and ready`
-                    );
+                try {
+                    const databases = await appwrite.databases.list();
                     
-                    // Enable check users button
-                    checkUsersBtn.disabled = false;
-                } else {
-                    showResult('warning', 
-                        `⚠ Connection OK but database not found.<br>
-                        Project: ${projectId} is valid<br>
-                        Database: ${databaseId} not found<br>
-                        You may need to create the database first.`
-                    );
-                }
-                
-            } catch (error) {
-                console.error('Connection error:', error);
-                showResult('error', 
-                    `❌ Connection Failed<br>
-                    Error: ${error.message}<br>
-                    Please check:<br>
-                    1. Project ID is correct<br>
-                    2. You have internet connection<br>
-                    3. Appwrite service is running`
-                );
-            } finally {
-                loading.style.display = 'none';
-            }
-        });
-        
-        // Check Users Function
-        checkUsersBtn.addEventListener('click', async function() {
-            const projectId = document.getElementById('projectId').value.trim();
-            const databaseId = document.getElementById('databaseId').value.trim();
-            const collectionId = document.getElementById('collectionId').value.trim();
-            
-            if (!projectId) {
-                showResult('error', 'Please test connection first');
-                return;
-            }
-            
-            // Show loading
-            loading.style.display = 'block';
-            resultBox.style.display = 'none';
-            
-            try {
-                // Initialize Appwrite if not already
-                if (!appwrite) {
-                    appwrite = new Appwrite();
-                    appwrite
-                        .setEndpoint(APPWRITE_ENDPOINT)
-                        .setProject(projectId);
-                }
-                
-                // Try to list documents (users)
-                const documents = await appwrite.databases.listDocuments(
-                    databaseId,
-                    collectionId
-                );
-                
-                if (documents.total > 0) {
-                    let userListHTML = '<div class="user-list">';
+                    logToConsole(`Found ${databases.total} database(s)`, 'success');
                     
-                    documents.documents.forEach((user, index) => {
-                        userListHTML += `
-                            <div class="user-item">
-                                <div>
-                                    <strong>${index + 1}. ${user.displayName || 'No Name'}</strong><br>
-                                    <small>Email: ${user.email || 'No Email'}</small><br>
-                                    <small>ID: ${user.$id.substring(0, 20)}...</small>
-                                </div>
-                                <div style="color: #28a745;">
-                                    <i class="fas fa-check-circle"></i>
-                                </div>
-                            </div>
-                        `;
+                    // Look for our database
+                    let dbFound = false;
+                    databases.databases.forEach(db => {
+                        logToConsole(`Database: ${db.name} (ID: ${db.$id})`, 'info');
+                        if (db.name === databaseId || db.$id === databaseId) {
+                            dbFound = true;
+                        }
                     });
                     
-                    userListHTML += '</div>';
+                    if (dbFound) {
+                        showResult('success', 
+                            `✅ <strong>Connection Successful!</strong><br><br>
+                            <strong>Project:</strong> ${projectId}<br>
+                            <strong>Database:</strong> ${databaseId} (Found)<br>
+                            <strong>Status:</strong> Connected and ready<br><br>
+                            <i class="fas fa-check-circle" style="color: #2ed573;"></i> Appwrite is working correctly!`
+                        );
+                        
+                        checkUsersBtn.disabled = false;
+                        logToConsole('Connection test passed!', 'success');
+                    } else {
+                        showResult('warning', 
+                            `⚠ <strong>Connection OK but database not found</strong><br><br>
+                            <strong>Project:</strong> ${projectId} is valid<br>
+                            <strong>Looking for:</strong> ${databaseId}<br>
+                            <strong>Status:</strong> Database not found<br><br>
+                            <i class="fas fa-exclamation-triangle" style="color: #ffa502;"></i> You may need to create the database in Appwrite Console.`
+                        );
+                        
+                        logToConsole(`Database "${databaseId}" not found in project`, 'warning');
+                    }
                     
-                    showResult('success', 
-                        `✅ Found ${documents.total} registered user(s) in your database!<br>
-                        Collection: ${collectionId}<br><br>
-                        ${userListHTML}`
-                    );
-                } else {
-                    showResult('info', 
-                        `📭 No users found in the database.<br>
-                        Collection: ${collectionId} is empty.<br><br>
-                        This means:<br>
-                        1. Your registration might have failed<br>
-                        2. Data was saved to localStorage instead<br>
-                        3. You haven't registered any users yet<br><br>
-                        Try registering a user first, then check again.`
-                    );
+                } catch (listError) {
+                    // If we can't list databases, try a simpler test
+                    logToConsole(`Cannot list databases: ${listError.message}`, 'warning');
+                    logToConsole('Trying alternative connection test...', 'debug');
                     
-                    // Check localStorage as fallback
-                    const localUsers = JSON.parse(localStorage.getItem('fzone_users') || '[]');
-                    if (localUsers.length > 0) {
-                        let localListHTML = '<div class="user-list" style="background: #fff3cd; border: 1px solid #ffeaa7;">';
-                        localListHTML += '<h4><i class="fas fa-exclamation-triangle"></i> Users found in localStorage:</h4>';
+                    // Try to create a simple test document
+                    try {
+                        // This is just to test if we can write
+                        logToConsole('Testing write permissions...', 'debug');
                         
-                        localUsers.forEach((user, index) => {
-                            localListHTML += `
-                                <div class="user-item">
-                                    <div>
-                                        <strong>${index + 1}. ${user.displayName || 'No Name'}</strong><br>
-                                        <small>Email: ${user.email || 'No Email'}</small>
-                                    </div>
-                                    <div style="color: #ffc107;">
-                                        <i class="fas fa-laptop-house"></i>
-                                    </div>
-                                </div>
-                            `;
-                        });
+                        showResult('info', 
+                            `ℹ <strong>Limited Connection</strong><br><br>
+                            <strong>Project:</strong> ${projectId} is reachable<br>
+                            <strong>Status:</strong> Basic connection OK<br><br>
+                            <i class="fas fa-info-circle" style="color: #2e86de;"></i> Full access might require API key or permissions setup.`
+                        );
                         
-                        localListHTML += '</div>';
+                        logToConsole('Basic connection established', 'success');
                         
-                        // Append to result
-                        const resultContent = document.querySelector('.result-content');
-                        resultContent.innerHTML += localListHTML;
+                    } catch (writeError) {
+                        throw new Error(`Cannot access project: ${writeError.message}`);
                     }
                 }
                 
             } catch (error) {
-                console.error('Error checking users:', error);
+                console.error('Connection error:', error);
+                logToConsole(`Connection failed: ${error.message}`, 'error');
                 
-                if (error.code === 404) {
-                    showResult('warning', 
-                        `📭 Collection not found.<br>
-                        Error: ${error.message}<br><br>
-                        This usually means:<br>
-                        1. The collection "${collectionId}" doesn't exist<br>
-                        2. You need to create it in Appwrite Console<br>
-                        3. Check spelling and case sensitivity`
-                    );
-                } else {
-                    showResult('error', 
-                        `❌ Error checking users:<br>
-                        ${error.message}<br><br>
-                        Common issues:<br>
-                        1. Collection doesn't exist<br>
-                        2. Database doesn't exist<br>
-                        3. Permissions not set`
-                    );
-                }
+                let errorMessage = `
+                    ❌ <strong>Connection Failed</strong><br><br>
+                    <strong>Error:</strong> ${error.message}<br><br>
+                    <strong>Troubleshooting steps:</strong><br>
+                    1. Check your Project ID is correct<br>
+                    2. Verify internet connection<br>
+                    3. Make sure you're logged into Appwrite<br>
+                    4. Check browser console for details<br><br>
+                    <i class="fas fa-times-circle" style="color: #ff4757;"></i> Please fix the connection issue.`;
                 
-                // Check localStorage as fallback
-                const localUsers = JSON.parse(localStorage.getItem('fzone_users') || '[]');
-                if (localUsers.length > 0) {
-                    let localListHTML = '<div class="user-list" style="background: #fff3cd; border: 1px solid #ffeaa7; margin-top: 20px;">';
-                    localListHTML += '<h4><i class="fas fa-exclamation-triangle"></i> Fallback: Users in localStorage:</h4>';
-                    
-                    localUsers.forEach((user, index) => {
-                        localListHTML += `
-                            <div class="user-item">
-                                <div>
-                                    <strong>${index + 1}. ${user.displayName || 'No Name'}</strong><br>
-                                    <small>Email: ${user.email || 'No Email'}</small>
-                                </div>
-                                <div style="color: #ffc107;">
-                                    <i class="fas fa-laptop-house"></i>
-                                </div>
-                            </div>
-                        `;
-                    });
-                    
-                    localListHTML += '</div>';
-                    
-                    // Append to result
-                    const resultContent = document.querySelector('.result-content');
-                    resultContent.innerHTML += localListHTML;
-                }
+                showResult('error', errorMessage);
                 
             } finally {
                 loading.style.display = 'none';
             }
         });
         
-        // Show result function
-        function showResult(type, message) {
-            resultBox.className = `result-box ${type}`;
-            resultBox.innerHTML = `
-                <h3>
-                    ${type === 'success' ? '<i class="fas fa-check-circle"></i>' : ''}
-                    ${type === 'error' ? '<i class="fas fa-times-circle"></i>' : ''}
-                    ${type === 'warning' ? '<i class="fas fa-exclamation-triangle"></i>' : ''}
-                    ${type === 'info' ? '<i class="fas fa-info-circle"></i>' : ''}
-                    ${type.charAt(0).toUpperCase() + type.slice(1)}
-                </h3>
-                <div class="result-content">${message}</div>
-            `;
-            resultBox.style.display = 'block';
-        }
-        
-        // Auto-fill with saved data on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            // Check if we have Project ID from previous registration
-            const savedProjectId = localStorage.getItem('fzone_appwrite_project_id');
-            if (savedProjectId) {
-                document.getElementById('projectId').value = savedProjectId;
+        // Check Users in Appwrite
+        checkUsersBtn.addEventListener('click', async function() {
+            const projectId = document.getElementById('projectId').value.trim();
+            const databaseId = document.getElementById('databaseId').value.trim();
+            const collectionId = document.getElementById('collectionId').value.trim();
+            const apiKey = document.getElementById('apiKey').value.trim();
+            
+            loading.style.display = 'block';
+            loadingText.textContent = 'Checking registered users...';
+            
+            try {
+                logToConsole(`Checking users in ${collectionId} collection...`, 'debug');
+                
+                const appwrite = new Appwrite();
+                appwrite
+                    .setEndpoint(APPWRITE_ENDPOINT)
+                    .setProject(projectId);
+                
+                if (apiKey) {
+                    appwrite.setKey(apiKey);
+                }
+                
+                const documents = await appwrite.databases.listDocuments(
+                    databaseId,
+                    collectionId,
+                    [], // queries (empty for all)
+                    100 // limit
+                );
+                
+                logToConsole(`Found ${documents.total} document(s)`, 'success');
+                
+                if (documents.total > 0) {
+                    let userList = '<div style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px;">';
+                    userList += '<h4 style="margin-bottom: 10px; color: #333;">📋 Registered Users:</h4>';
+                    
+                    documents.documents.forEach((user, index) => {
+                        userList += `
+                            <div style="padding: 10px; margin-bottom: 8px; background: white; border-radius: 5px; border-left: 4px solid #2ed573;">
+                                <strong>${index + 1}. ${user.displayName || 'Unnamed User'}</strong><br>
+                                <small>Email: ${user.email || 'No email'}</small><br>
+                                <small style="color: #666;">ID: ${user.$id.substring(0, 25)}...</small><br>
+                                <small style="color: #666;">Created: ${new Date(user.$createdAt).toLocaleDateString()}</small>
+                            </div>
+                        `;
+                        
+                        logToConsole(`User ${index + 1}: ${user.displayName} (${user.email})`, 'info');
+                    });
+                    
+                    userList += '</div>';
+                    
+                    showResult('success', 
+                        `✅ <strong>Found ${documents.total} Registered User(s)</strong><br><br>
+                        <strong>Database:</strong> ${databaseId}<br>
+                        <strong>Collection:</strong> ${collectionId}<br><br>
+                        <i class="fas fa-check-circle" style="color: #2ed573;"></i> Your registration is working!<br><br>
+                        ${userList}`
+                    );
+                    
+                } else {
+                    showResult('info', 
+                        `📭 <strong>No Users Found</strong><br><br>
+                        <strong>Collection:</strong> ${collectionId} is empty<br><br>
+                        <i class="fas fa-info-circle" style="color: #2e86de;"></i> This could mean:<br>
+                        • No users registered yet<br>
+                        • Registration saved to localStorage instead<br>
+                        • Check localStorage using the button below`
+                    );
+                }
+                
+            } catch (error) {
+                logToConsole(`Error checking users: ${error.message}`, 'error');
+                
+                if (error.code === 404) {
+                    showResult('warning', 
+                        `📭 <strong>Collection Not Found</strong><br><br>
+                        <strong>Error:</strong> ${error.message}<br><br>
+                        <i class="fas fa-exclamation-triangle" style="color: #ffa502;"></i> The collection "${collectionId}" doesn't exist.<br>
+                        You need to create it in Appwrite Console.`
+                    );
+                } else {
+                    showResult('error', 
+                        `❌ <strong>Error Checking Users</strong><br><br>
+                        <strong>Error:</strong> ${error.message}<br><br>
+                        <i class="fas fa-times-circle" style="color: #ff4757;"></i> Please check permissions and collection existence.`
+                    );
+                }
+            } finally {
+                loading.style.display = 'none';
             }
         });
+        
+        // Check LocalStorage
+        function checkLocalStorage() {
+            const localUsers = JSON.parse(localStorage.getItem('fzone_users') || '[]');
+            const currentUser = JSON.parse(localStorage.getItem('fzone_current_user') || 'null');
+            
+            logToConsole(`Found ${localUsers.length} user(s) in localStorage`, 'info');
+            
+            if (currentUser) {
+                logToConsole(`Current user: ${currentUser.displayName} (${currentUser.email})`, 'success');
+            }
+            
+            return localUsers;
+        }
+        
+        checkLocalStorageBtn.addEventListener('click', function() {
+            const localUsers = checkLocalStorage();
+            
+            if (localUsers.length > 0) {
+                let userList = '<div style="margin-top: 15px; padding: 15px; background: #fff3cd; border-radius: 8px;">';
+                userList += '<h4 style="margin-bottom: 10px; color: #856404;">🏠 LocalStorage Users (Fallback):</h4>';
+                
+                localUsers.forEach((user, index) => {
+                    userList += `
+                        <div style="padding: 10px; margin-bottom: 8px; background: white; border-radius: 5px; border-left: 4px solid #ffa502;">
+                            <strong>${index + 1}. ${user.displayName || 'Unnamed User'}</strong><br>
+                            <small>Email: ${user.email || 'No email'}</small><br>
+                            <small style="color: #666;">ID: ${user.$id || 'local_' + index}</small>
+                        </div>
+                    `;
+                });
+                
+                userList += '</div>';
+                
+                showResult('warning', 
+                    `⚠ <strong>${localUsers.length} User(s) in LocalStorage</strong><br><br>
+                    <i class="fas fa-laptop-house" style="color: #ffa502;"></i> These users were saved locally because Appwrite connection failed.<br><br>
+                    ${userList}`
+                );
+            } else {
+                showResult('info', 
+                    `📭 <strong>No Users in LocalStorage</strong><br><br>
+                    <i class="fas fa-info-circle" style="color: #2e86de;"></i> No fallback users found in localStorage.`
+                );
+            }
+        });
+        
+        // Show result
+        function showResult(type, message) {
+            resultBox.className = `result-box ${type}`;
+            resultBox.innerHTML = message;
+            resultBox.style.display = 'block';
+        }
     </script>
 </body>
 </html>
